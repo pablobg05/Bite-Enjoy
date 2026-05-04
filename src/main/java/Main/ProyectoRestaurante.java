@@ -132,7 +132,7 @@ public class ProyectoRestaurante extends JFrame{
         topS.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
         topS.add(ser, BorderLayout.CENTER);
         
-        ImageIcon rawSer = new ImageIcon(getClass().getResource(""));
+        ImageIcon rawSer = new ImageIcon(getClass().getResource("/server.png"));
         
         Image scaledSer = rawSer.getImage().getScaledInstance(64, 64,Image.SCALE_SMOOTH);
         JLabel lblISer = new JLabel(new ImageIcon(scaledSer));
