@@ -11,12 +11,15 @@ import Pedido.Pedido;
 public class ProyectoRestaurante extends JFrame{
     
     public ProyectoRestaurante(){
+        //-- Titulo (lo que se mira en el borde) y tamano --
         setTitle("Bite & Enjoy");
         setSize(700, 500);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
+        //-- El layout del JFrame es usando los bordes
         setLayout(new BorderLayout());
         
+        //-- Header (La parte de arribita) --
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(new Color(45, 45, 45));
         header.setBorder(
@@ -29,32 +32,39 @@ public class ProyectoRestaurante extends JFrame{
         header.add(title, BorderLayout.WEST);
         add(header, BorderLayout.NORTH);
         
+        //-- Todo lo importante --
         JPanel main = new JPanel(new BorderLayout());
         
+        //-- El layout es en grid, osea que se ponen en una tipo matriz --
         JPanel grid = new JPanel();
-        grid.setLayout(new GridLayout(2, 2, 20, 20));
+        grid.setLayout(new GridLayout(2, 2, 20, 20)); // el grid es de 2 espacios para la derecha y para abajo, con 20px de espacio entre cada uno
         grid.setBackground(Color.WHITE);
         
-        JLabel res = new JLabel("Restaurante");
-        res.setHorizontalAlignment(SwingConstants.CENTER);
+        // ---------- Boton restaurante ----------
+        JLabel res = new JLabel("Restaurante"); // Label
+        res.setHorizontalAlignment(SwingConstants.CENTER); /* Hace que se quede en el centro siempre */
+        // -- Panel para poner la label --
         JPanel topR = new JPanel(new BorderLayout());
         topR.setBackground(new Color(150, 150, 150));
         topR.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
-        topR.add(res, BorderLayout.CENTER);
+        topR.add(res, BorderLayout.CENTER); // se agrega la label al panel
         
+        // Imagen
         ImageIcon rawRes = new ImageIcon(getClass().getResource("/restaurante.png"));
         
         Image scaledRes = rawRes.getImage().getScaledInstance(64, 64,Image.SCALE_SMOOTH);
         JLabel lblIRes = new JLabel(new ImageIcon(scaledRes));
         lblIRes.setHorizontalAlignment(SwingConstants.CENTER);
         
+        // -- Panel que servira como boton --
         JPanel btnRes = new JPanel(new BorderLayout());
         btnRes.setBackground(new Color(150, 150, 150));
-        btnRes.add(topR, BorderLayout.NORTH);
-        btnRes.add(lblIRes, BorderLayout.CENTER);
+        btnRes.add(topR, BorderLayout.NORTH); // se agrega el panel de la label
+        btnRes.add(lblIRes, BorderLayout.CENTER); // se agrega el panel de la imagen
+        // -- Logica para que funcione como boton
         btnRes.addMouseListener(new MouseAdapter(){
                 @Override
-                public void mouseEntered(MouseEvent e){
+                public void mouseEntered(MouseEvent e){ // al poner el cursor
                     btnRes.setBackground(new Color(98, 98, 98));
                     btnRes.repaint();
                     topR.setBackground(new Color(98, 98, 98));
@@ -64,7 +74,7 @@ public class ProyectoRestaurante extends JFrame{
                 }
                 
                 @Override
-                public void mouseExited(MouseEvent e){
+                public void mouseExited(MouseEvent e){ // al quitar el cursor
                     btnRes.setBackground(new Color(150, 150, 150));
                     btnRes.repaint();
                     topR.setBackground(new Color(150, 150, 150));
@@ -73,13 +83,15 @@ public class ProyectoRestaurante extends JFrame{
                     lblIRes.repaint();
                 }
                 @Override
-                public void mouseClicked(MouseEvent e){
+                public void mouseClicked(MouseEvent e){ // al dar click
                     RestaurantUI res = new RestaurantUI();
                     res.setVisible(true);
                     setVisible(false);
                 }
         });
         
+        // ---------- Boton Delivery ----------
+        // -- Lo mismo que para el de restaurante --
         JLabel del = new JLabel("Delivery");
         del.setHorizontalAlignment(SwingConstants.CENTER);
         JPanel topD = new JPanel(new BorderLayout());
@@ -125,6 +137,7 @@ public class ProyectoRestaurante extends JFrame{
                 }
         });
         
+        // ---------- Boton Server ----------
         JLabel ser = new JLabel("Server");
         ser.setHorizontalAlignment(SwingConstants.CENTER);
         JPanel topS = new JPanel(new BorderLayout());
@@ -170,6 +183,7 @@ public class ProyectoRestaurante extends JFrame{
                 }
         });
         
+        // ---------- Boton Pedidos ----------
         JLabel ped = new JLabel("Pedidos");
         ser.setHorizontalAlignment(SwingConstants.CENTER);
         JPanel topP = new JPanel(new BorderLayout());
@@ -215,12 +229,15 @@ public class ProyectoRestaurante extends JFrame{
                 }
         });
         
+        // -- Se agregan todos los botones al grid
         grid.add(btnDel);
         grid.add(btnRes);
         grid.add(btnSer);
         grid.add(btnPed);
+        // -- Se agrega el grid al main layout
         main.add(grid, BorderLayout.CENTER);
         
+        // -- Agregue esto para que quede separado de los izquierda, tal vez lo arregle despues si se puede
         JPanel west = new JPanel(new BorderLayout());
         west.setBackground(Color.WHITE);
         west.setBorder(BorderFactory.createEmptyBorder(30, 40, 30, 40));
@@ -241,9 +258,10 @@ public class ProyectoRestaurante extends JFrame{
         south.setBorder(BorderFactory.createEmptyBorder(30, 40, 30, 40));
         main.add(south, BorderLayout.SOUTH);
         
+        // se agrega todo al JFrame
         add(main, BorderLayout.CENTER);
         
-        
+        // Se pone visible
         setVisible(true);
     }
     
