@@ -185,7 +185,7 @@ public class ProyectoRestaurante extends JFrame{
         
         // ---------- Boton Pedidos ----------
         JLabel ped = new JLabel("Pedidos");
-        ser.setHorizontalAlignment(SwingConstants.CENTER);
+        ped.setHorizontalAlignment(SwingConstants.CENTER);
         JPanel topP = new JPanel(new BorderLayout());
         topP.setBackground(new Color(150, 150, 150));
         topP.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
