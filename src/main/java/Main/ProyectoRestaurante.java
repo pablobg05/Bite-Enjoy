@@ -1,5 +1,6 @@
 package Main;
 
+import Clases.ArbolBPlus;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -268,6 +269,7 @@ public class ProyectoRestaurante extends JFrame{
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             ProyectoRestaurante ui = new ProyectoRestaurante();
+            ArbolBPlus historial = ArbolBPlus.cargar("historial.dat");
         });
     }
 }

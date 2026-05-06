@@ -3,10 +3,13 @@ package Clases;
 import Clases.PedidoClass;
 import Clases.PedidoClass;
 import java.util.*;
+import java.io.*;
 
-public class ArbolBPlus {
+public class ArbolBPlus implements Serializable{ // Serializable = para guardar el objeto sin perder los datos del arbol del historial
+    private static final long serialVersionUID = 1L; // Control de version
 
     class Nodo {//El nodo con el que se va a trabajar ( así como lo que vimos del b normal muchá )
+        private static final long serialVersionUID = 1L;
         ArrayList<Long> llaves = new ArrayList<>(); 
         ArrayList<PedidoClass> pedidos = new ArrayList<>(); //le agregue esta onda para poder usar el objeto del pedido que ya tenemos
         ArrayList<Nodo> hijos = new ArrayList<>();
@@ -120,5 +123,31 @@ public class ArbolBPlus {
             actual = actual.siguiente; // Saltamos al siguiente nodo
         }
         return historial;
+    }
+    
+    public static void guardar(ArbolBPlus arbol, String archivo) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(
+                new FileOutputStream(archivo))) {
+            oos.writeObject(arbol);
+            System.out.println("Árbol guardado en " + archivo);
+        } catch (IOException e) {
+            System.err.println("Error al guardar: " + e.getMessage());
+        }
+    }
+
+    public static ArbolBPlus cargar(String archivo) {
+        File f = new File(archivo);
+        if (!f.exists()) {
+            // first run — no file yet, start fresh
+            System.out.println("No existe historial, iniciando nuevo árbol.");
+            return new ArbolBPlus(2);
+        }
+        try (ObjectInputStream ois = new ObjectInputStream(
+                new FileInputStream(archivo))) {
+            return (ArbolBPlus) ois.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            System.err.println("Error al cargar: " + e.getMessage());
+            return new ArbolBPlus(2); // fallback
+        }
     }
 }

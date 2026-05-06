@@ -5,7 +5,8 @@ import java.util.List;
 import java.io.Serializable;
 import java.util.Date;
 
-public class PedidoClass implements Serializable {
+public class PedidoClass implements Serializable{
+    private static final long serialVersionUID = 1L;
     private String id;
     private String cliente;
     private String tipo;
