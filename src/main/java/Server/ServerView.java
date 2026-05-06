@@ -407,263 +407,250 @@ public class ServerView extends javax.swing.JFrame {
 
 
     public static void main(String args[]) {
+        ServerView vista = new ServerView(); // se "Instancia" la ventana
 
-                ServerView vista = new ServerView();// se "Instancia" la ventana, la verdad acá me perdí un poco, anduve investigando como era esto
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                vista.setVisible(true);
+            }
+        });
 
-                java.awt.EventQueue.invokeLater(new Runnable() {
-                    public void run() {
-                        vista.setVisible(true);
-                    }
-                });
+        // --- ESTO ES EL HILO PARA QUE EL SERVIDOR NO CONGELE LA VENTANA ---
+        new Thread(() -> {
+            // Creamos el socket de forma que permita reutilizar el puerto inmediatamente si reiniciamos
+            try {
+                ServerSocket servidor = new ServerSocket();
+                servidor.setReuseAddress(true);
+                servidor.bind(new java.net.InetSocketAddress(8080)); // ACA ESTA LA ONDA DEL PUERTOOOOOO ------------------
 
-                // --- ESTO ES EL HILO PARA QUE EL SERVIDOR NO CONGELE LA VENTANA ---
-                new Thread(() -> {
-                    // Creamos el socket de forma que permita reutilizar el puerto inmediatamente si reiniciamos
-                    try {
-                        ServerSocket servidor = new ServerSocket();
-                        servidor.setReuseAddress(true); 
-                        servidor.bind(new java.net.InetSocketAddress(8080)); //ACA ESTA LA ONDA DEL PUERTOOOOOO ---------------------------------------------------------
+                System.out.println("Servidor escuchando en puerto 5003...");
 
-                        System.out.println("Servidor escuchando en puerto 5003...");
+                while (true) {
+                    Socket cliente = servidor.accept(); // El servidor se queda esperando aquí a que el PC 1 se conecte
 
+                    // Si el código llega aquí, es que el servidor se conectó con éxito
+                    vista.actualizarEstadoServidor(vista.lblPcPedidos, true); // Encendemos la luz en VERDE 
+                    System.out.println("PC 1 conectado.");
+
+                    // Usamos un segundo try para manejar la conexión continua con este cliente específico
+                    try (ObjectInputStream entrada = new ObjectInputStream(cliente.getInputStream())) {
                         while (true) {
-                            Socket cliente = servidor.accept(); // El servidor se queda esperando aquí a que el PC 1 se conecte
+                            // Se queda escuchando permanentemente los objetos que mande el PC 1
+                            PedidoClass p = (PedidoClass) entrada.readObject(); // Leemos el objeto que mandó el cliente
 
-                            // Si el código llega aquí, es que el servidor se conectó con éxito
-                            vista.actualizarEstadoServidor(vista.lblPcPedidos, true); // Encendemos la luz en VERDE ------------------------------ESTO LE AGRESGAS LOS OTROS PCS, PARA CUANDO LO REVISEN MUCHA
-                            System.out.println("PC 1 conectado.");
+                            // ---------------- ALMACENAR LAS VAINAS EN LAS ESTRUCTURAS ----------------
+                            listaPedidos.add(p); // todo se almacena en el historial
 
-                            // Usamos un segundo try para manejar la conexión continua con este cliente específico
-                            try (ObjectInputStream entrada = new ObjectInputStream(cliente.getInputStream())) {
-                                while (true) {
-                                    // Se queda escuchando permanentemente los objetos que mande el PC 1
-                                    PedidoClass p = (PedidoClass) entrada.readObject();// Leemos el objeto que mandó el cliente
+                            vista.mostrarNotificacion("¡Pedido recibido! Cliente: " + p.getCliente()); // ESTP ES LO DE LA NOTIFICACION ALEEEEEX
 
-                                    // ----------------ALMACENAR LAS VAINAS EN LAS ESTRUCTURAS ----------------
+                            if (!p.isEstado()) { // Solo revisamos los pendientes
+                                colaPedidos.add(p); // Cola de pendientes
 
-                                    listaPedidos.add(p); //todo se almacena en el historial
+                                if (p.getTipo().equalsIgnoreCase("Restaurante")) { // Pendientes del restaurante
+                                    colaRestaurante.add(p);
+                                } else if (p.getTipo().equalsIgnoreCase("Delivery")) { // Pendientes del delivery
+                                    colaDelivery.add(p);
 
-                                    vista.mostrarNotificacion("¡Pedido recibido! Cliente: " + p.getCliente());//ESTP ES LO DE LA NOTIFICACION ALEEEEEX
+                                    try {
+                                        // La IP de la PC 3 (Delivery) y un puerto nuevo, ej: 5004
+                                        Socket socketPC3 = new Socket("localhost", 5004); // IP DEL PC 3 (DELIVERY)
+                                        ObjectOutputStream salidaPC3 = new ObjectOutputStream(socketPC3.getOutputStream());
 
-                                    if (!p.isEstado()) { //Solo revisamos los pendientes
-                                        colaPedidos.add(p);// Cola de pendientes
-
-                                        if (p.getTipo().equalsIgnoreCase("Restaurante")) {// Pendientes del restaurante
-                                            colaRestaurante.add(p);
-                                        } 
-                                        else if (p.getTipo().equalsIgnoreCase("Delivery")) {//Pendientes del delivery
-                                            colaDelivery.add(p);
-                                            
-                                            
-                                            
-                                            try {
-                                                // La IP de la PC 3 (Delivery) y un puerto nuevo, ej: 5004
-                                                Socket socketPC3 = new Socket("localhost", 5004); //---------------------------------------------------------------------> IP DEL PC 3 (DELIVERY)
-                                                ObjectOutputStream salidaPC3 = new ObjectOutputStream(socketPC3.getOutputStream());
-
-                                                salidaPC3.writeObject(p); // Le mandamos el pedido completo
-                                                salidaPC3.flush();
-                                                socketPC3.close(); // Cerramos después de enviar
-                                            } catch (Exception e) {
-                                                System.out.println("PC 3 no está conectada o disponible");
-                                            }
-                                        }
+                                        salidaPC3.writeObject(p); // Le mandamos el pedido completo
+                                        salidaPC3.flush();
+                                        socketPC3.close(); // Cerramos después de enviar
+                                    } catch (Exception e) {
+                                        System.out.println("PC 3 no está conectada o disponible");
                                     }
-
-                                    // --- PARA VER QUE TAL VA JAJA ---
-                                    imprimirEstadoEstructuras();
-
-                                    vista.actualizarTablaHistorial();// Llamamos a actualizar la tabla usando la instancia 'vista'
-                                    vista.actualizarTablaPendientes();
-                                }
-                            } catch (java.io.EOFException | java.net.SocketException e) {
-                                // Detecta cuando el PC 1 cierra el programa o la conexión
-                                System.out.println("La Pc de los pedidos se ha desconectado.");
-                            } catch (Exception e) {
-                                System.err.println("Error recibiendo datos: " + e.getMessage());
-                            } finally {
-
-                                vista.actualizarEstadoServidor(vista.lblPcPedidos, false); // Cuando la conexión se rompe por cualquier razón, apagamos el LED
-                                if (!cliente.isClosed()) {
-                                    try { cliente.close(); } catch (Exception ex) {}
                                 }
                             }
+
+                            // --- PARA VER QUE TAL VA JAJA ---
+                            imprimirEstadoEstructuras();
+
+                            vista.actualizarTablaHistorial(); // Llamamos a actualizar la tabla usando la instancia 'vista'
+                            vista.actualizarTablaPendientes();
                         }
+                    } catch (java.io.EOFException | java.net.SocketException e) {
+                        // Detecta cuando el PC 1 cierra el programa o la conexión
+                        System.out.println("La Pc de los pedidos se ha desconectado.");
                     } catch (Exception e) {
-
-                        vista.actualizarEstadoServidor(vista.lblPcPedidos, false); // Si el servidor falla al arrancar o se cae, ponemos la luz en ROJO
-                        System.err.println("Error en el servidor: " + e.getMessage());
+                        System.err.println("Error recibiendo datos: " + e.getMessage());
+                    } finally {
+                        vista.actualizarEstadoServidor(vista.lblPcPedidos, false); // Apagamos el LED
+                        if (!cliente.isClosed()) {
+                            try { cliente.close(); } catch (Exception ex) {}
+                        }
                     }
-                }).start(); // Hasta acá es donde arrancamos el hilo
-                
-                // --- HILO PARA ESCUCHAR RESPUESTAS DE PC 3 (DELIVERY) ---
-                new Thread(() -> {
-                    try {
-                        ServerSocket serverRespuestas = new ServerSocket(5005);
-                        serverRespuestas.setReuseAddress(true);
+                }
+            } catch (Exception e) {
+                vista.actualizarEstadoServidor(vista.lblPcPedidos, false); // Si el servidor falla, luz en ROJO
+                System.err.println("Error en el servidor: " + e.getMessage());
+            }
+        }).start(); // Hasta acá es donde arrancamos el hilo
 
+        // --- HILO PARA ESCUCHAR RESPUESTAS DE PC 3 (DELIVERY) ---
+        new Thread(() -> {
+            try {
+                ServerSocket serverRespuestas = new ServerSocket(5005);
+                serverRespuestas.setReuseAddress(true);
+
+                while (true) {
+                    // Se queda esperando a que la PC 3 se conecte
+                    Socket pc3 = serverRespuestas.accept();
+
+                    // ¡PC 3 CONECTADA! Prendemos el LED
+                    vista.actualizarEstadoServidor(vista.lblPcDelivery, true);
+                    System.out.println("PC Delivery (PC 3) conectada.");
+
+                    try (ObjectInputStream entrada = new ObjectInputStream(pc3.getInputStream())) {
                         while (true) {
-                            // Se queda esperando a que la PC 3 se conecte
-                            Socket pc3 = serverRespuestas.accept(); 
+                            // Escucha permanentemente los "Listo" sin cerrar la conexión
+                            PedidoClass pedidoListo = (PedidoClass) entrada.readObject();
 
-                            // ¡PC 3 CONECTADA! Prendemos el LED y se queda así mientras no se cierre el socket
-                            vista.actualizarEstadoServidor(vista.lblPcDelivery, true);
-                            System.out.println("PC Delivery (PC 3) conectada.");
+                            // 1. Notificación
+                            vista.mostrarNotificacion("¡Pedido #" + pedidoListo.getId() + " en camino!");
 
-                            try (ObjectInputStream entrada = new ObjectInputStream(pc3.getInputStream())) {
-                                while (true) {
-                                    // Escucha permanentemente los "Listo" sin cerrar la conexión
-                                    PedidoClass pedidoListo = (PedidoClass) entrada.readObject();
+                            // 2. Actualizar estructuras
+                            colaPedidos.removeIf(p -> p.getId().equals(pedidoListo.getId()));
+                            colaDelivery.removeIf(p -> p.getId().equals(pedidoListo.getId()));
 
-                                    // 1. Notificación
-                                    vista.mostrarNotificacion("¡Pedido #" + pedidoListo.getId() + " en camino!");
-
-                                    // 2. Actualizar estructuras
-                                    colaPedidos.removeIf(p -> p.getId().equals(pedidoListo.getId()));
-                                    colaDelivery.removeIf(p -> p.getId().equals(pedidoListo.getId()));
-
-                                    // 3. Actualizar historial
-                                    for(PedidoClass p : listaPedidos){
-                                        if(p.getId().equals(pedidoListo.getId())){
-                                            p.setEstado(true);
-                                            break;
-                                        }
-                                    }
-
-                                    // 4. Refrescar tablas
-                                    vista.actualizarTablaPendientes();
-                                    vista.actualizarTablaHistorial();
-                                }
-                            } catch (Exception e) {
-                                // Si la PC 3 se cierra, el socket se rompe y entra aquí
-                                System.out.println("PC Delivery desconectada.");
-                            } finally {
-                                // Se apagará el LED solo cuando la conexión se pierda
-                                vista.actualizarEstadoServidor(vista.lblPcDelivery, false);
-                                if(!pc3.isClosed()) {
-                                    try { pc3.close(); } catch (Exception ex) {}
+                            // 3. Actualizar historial
+                            for (PedidoClass p : listaPedidos) {
+                                if (p.getId().equals(pedidoListo.getId())) {
+                                    p.setEstado(true);
+                                    break;
                                 }
                             }
+
+                            // 4. Refrescar tablas
+                            vista.actualizarTablaPendientes();
+                            vista.actualizarTablaHistorial();
                         }
                     } catch (Exception e) {
-                        System.err.println("Error en puerto 5005: " + e.getMessage());
+                        // Si la PC 3 se cierra, el socket se rompe y entra aquí
+                        System.out.println("PC Delivery desconectada.");
+                    } finally {
+                        // Se apagará el LED solo cuando la conexión se pierda
+                        vista.actualizarEstadoServidor(vista.lblPcDelivery, false);
+                        if (!pc3.isClosed()) {
+                            try { pc3.close(); } catch (Exception ex) {}
+                        }
                     }
-                }).start();    
-            }
-
-        private static void imprimirEstadoEstructuras() { //Solo pa ver si todo nice o no está nice
-            System.out.println("\n======= ESTADO ACTUAL DEL SISTEMA =======");
-            System.out.println("Historial Total: " + listaPedidos.size());
-            System.out.println("Cola Pendientes (Total): " + colaPedidos.size());
-            System.out.println("Cola Restaurante: " + colaRestaurante.size());
-            System.out.println("Cola Delivery: " + colaDelivery.size());
-            System.out.println("==========================================");
-        }
-
-
-
-        public void actualizarTablaHistorial() {
-            javax.swing.table.DefaultTableModel modelo = (javax.swing.table.DefaultTableModel) tblHistorial.getModel(); //reinicia la tabla y saca modelo
-            modelo.setRowCount(0); 
-
-            modelo.setColumnIdentifiers(new Object[]{"Id", "Cliente", "Tipo", "Total"});//columnas - AGREGADO TOTAL
-
-            // --- CONFIGURACIÓN DE DISEÑO ---
-            tblHistorial.setRowHeight(30);
-            tblHistorial.getColumnModel().getColumn(0).setMaxWidth(80);
-
-            if (listaPedidos != null) { //recorrer la lista el for de abajo jaja
-                for (PedidoClass p : listaPedidos) { 
-                    // Extraemos los datos del objeto PedidoClass para llenar las columnas e incluimos el Total calculado
-                    modelo.addRow(new Object[]{p.getId(), p.getCliente(), p.getTipo(), "Q" + p.getTotalPedido()});
                 }
+            } catch (Exception e) {
+                System.err.println("Error en puerto 5005: " + e.getMessage());
+            }
+        }).start();   
+    }
+
+    private static void imprimirEstadoEstructuras() { //Solo pa ver si todo nice o no está nice
+        System.out.println("\n======= ESTADO ACTUAL DEL SISTEMA =======");
+        System.out.println("Historial Total: " + listaPedidos.size());
+        System.out.println("Cola Pendientes (Total): " + colaPedidos.size());
+        System.out.println("Cola Restaurante: " + colaRestaurante.size());
+        System.out.println("Cola Delivery: " + colaDelivery.size());
+        System.out.println("==========================================");
+    }
+
+    public void actualizarTablaHistorial() {
+        javax.swing.table.DefaultTableModel modelo = (javax.swing.table.DefaultTableModel) tblHistorial.getModel(); // reinicia la tabla y saca modelo
+        modelo.setRowCount(0);
+
+        modelo.setColumnIdentifiers(new Object[]{"Id", "Cliente", "Tipo", "Total"}); // columnas - AGREGADO TOTAL
+
+        // --- CONFIGURACIÓN DE DISEÑO ---
+        tblHistorial.setRowHeight(30);
+        tblHistorial.getColumnModel().getColumn(0).setMaxWidth(80);
+
+        if (listaPedidos != null) { // recorrer la lista el for de abajo jaja
+            for (PedidoClass p : listaPedidos) {
+                // Extraemos los datos del objeto PedidoClass para llenar las columnas e incluimos el Total calculado
+                modelo.addRow(new Object[]{p.getId(), p.getCliente(), p.getTipo(), "Q" + p.getTotalPedido()});
             }
         }
+    }
 
+    public void actualizarTablaPendientes() {
+        javax.swing.table.DefaultTableModel modelo = (javax.swing.table.DefaultTableModel) tblPendientes.getModel(); // reinicia la tabla y saca modelo
+        modelo.setRowCount(0);
 
-        public void actualizarTablaPendientes() {
-            javax.swing.table.DefaultTableModel modelo = (javax.swing.table.DefaultTableModel) tblPendientes.getModel(); //reinicia la tabla y saca modelo
-            modelo.setRowCount(0); 
+        modelo.setColumnIdentifiers(new Object[]{"Id", "Cliente", "Tipo", "Total"}); // columnas - AGREGADO TOTAL
 
-            modelo.setColumnIdentifiers(new Object[]{"Id", "Cliente", "Tipo", "Total"});//columnas - AGREGADO TOTAL
+        // --- CONFIGURACIÓN DE DISEÑO ---
+        tblPendientes.setRowHeight(30);
+        tblPendientes.getColumnModel().getColumn(0).setMaxWidth(80);
 
-            // --- CONFIGURACIÓN DE DISEÑO ---
-            tblPendientes.setRowHeight(30);
-            tblPendientes.getColumnModel().getColumn(0).setMaxWidth(80);
-
-            if (colaPedidos != null) { //recorrer la lista el for de abajo jaja
-                for (PedidoClass p : colaPedidos) { 
-                    // Extraemos los datos del objeto PedidoClass para llenar las columnas e incluimos el Total calculado
-                    modelo.addRow(new Object[]{p.getId(), p.getCliente(), p.getTipo(), "Q" + p.getTotalPedido()});
-                }
+        if (colaPedidos != null) { // recorrer la lista el for de abajo jaja
+            for (PedidoClass p : colaPedidos) {
+                // Extraemos los datos del objeto PedidoClass para llenar las columnas e incluimos el Total calculado
+                modelo.addRow(new Object[]{p.getId(), p.getCliente(), p.getTipo(), "Q" + p.getTotalPedido()});
             }
         }
+    }
 
+    public void actualizarEstadoServidor(javax.swing.JLabel etiqueta, boolean encendido) {
+        // Si encendido es true usa greenCircle, si es false usa redCircle
+        String imagen = encendido ? "/greenCircle.png" : "/redCircle.png";
+        java.net.URL ruta = getClass().getResource(imagen);
 
-        public void actualizarEstadoServidor(javax.swing.JLabel etiqueta, boolean encendido) {
-            // Si encendido es true usa greenCircle, si es false usa redCircle
-            String imagen = encendido ? "/greenCircle.png" : "/redCircle.png";
-            java.net.URL ruta = getClass().getResource(imagen);
-
-            if (ruta != null) {
-                javax.swing.ImageIcon icono = new javax.swing.ImageIcon(ruta);
-                java.awt.Image img = icono.getImage().getScaledInstance(
-                        etiqueta.getWidth(), etiqueta.getHeight(), java.awt.Image.SCALE_SMOOTH);
-                etiqueta.setIcon(new javax.swing.ImageIcon(img));
-            } else {
-                System.err.println("No se encontró la imagen: " + imagen);
-            }
+        if (ruta != null) {
+            javax.swing.ImageIcon icono = new javax.swing.ImageIcon(ruta);
+            java.awt.Image img = icono.getImage().getScaledInstance(
+                    etiqueta.getWidth(), etiqueta.getHeight(), java.awt.Image.SCALE_SMOOTH);
+            etiqueta.setIcon(new javax.swing.ImageIcon(img));
+        } else {
+            System.err.println("No se encontró la imagen: " + imagen);
         }
+    }
 
-        public void etiquetas(){
-            setImagenLabel(lblPedidos, "/pedidos.png");
-            setImagenLabel(lblDelivery, "/delivery.png");
-            setImagenLabel(lblRestaurante, "/restaurante.png");
-        }
+    public void etiquetas() {
+        setImagenLabel(lblPedidos, "/pedidos.png");
+        setImagenLabel(lblDelivery, "/delivery.png");
+        setImagenLabel(lblRestaurante, "/restaurante.png");
+    }
 
+    public void setImagenLabel(javax.swing.JLabel etiqueta, String nombreImagen) { // para ajustar las imagenes a los lbl
+        java.net.URL ruta = getClass().getResource(nombreImagen);
 
-        public void setImagenLabel(javax.swing.JLabel etiqueta, String nombreImagen) { //para ajustar las imagenes a los lbl
-            java.net.URL ruta = getClass().getResource(nombreImagen);
+        if (ruta != null) {
+            javax.swing.ImageIcon iconoOriginal = new javax.swing.ImageIcon(ruta);
 
-            if (ruta != null) {
-                javax.swing.ImageIcon iconoOriginal = new javax.swing.ImageIcon(ruta);
-
-                java.awt.Image imagenEscalada = iconoOriginal.getImage().getScaledInstance(
-                        etiqueta.getWidth(), 
-                        etiqueta.getHeight(), 
-                        java.awt.Image.SCALE_SMOOTH
-                );
-
-                etiqueta.setIcon(new javax.swing.ImageIcon(imagenEscalada));
-            } else {
-                System.err.println("No se pudo encontrar la imagen en: " + nombreImagen);
-            }
-        }
-
-        public void mostrarNotificacion(String mensaje) {
-            final javax.swing.JOptionPane optionPane = new javax.swing.JOptionPane(
-                    mensaje, 
-                    javax.swing.JOptionPane.INFORMATION_MESSAGE, 
-                    javax.swing.JOptionPane.DEFAULT_OPTION, 
-                    null, 
-                    new Object[]{}, null // Esto quita los botones para que no sea intrusivo así bien feo xd
+            java.awt.Image imagenEscalada = iconoOriginal.getImage().getScaledInstance(
+                    etiqueta.getWidth(),
+                    etiqueta.getHeight(),
+                    java.awt.Image.SCALE_SMOOTH
             );
 
-            final javax.swing.JDialog dialog = optionPane.createDialog(this, "Nuevo Pedido");
-            dialog.setModal(false); //Permite que sigas usando el server mientras se ve la nota
-
-
-            javax.swing.Timer timer = new javax.swing.Timer(2500, e -> {            // Timer para cerrar la notificación solita después de 2.5 segundos
-                dialog.setVisible(false);
-                dialog.dispose();
-            });
-
-            timer.setRepeats(false);
-            timer.start();
-
-            dialog.setVisible(true);
+            etiqueta.setIcon(new javax.swing.ImageIcon(imagenEscalada));
+        } else {
+            System.err.println("No se pudo encontrar la imagen en: " + nombreImagen);
         }
-    
+    }
+
+    public void mostrarNotificacion(String mensaje) {
+        final javax.swing.JOptionPane optionPane = new javax.swing.JOptionPane(
+                mensaje,
+                javax.swing.JOptionPane.INFORMATION_MESSAGE,
+                javax.swing.JOptionPane.DEFAULT_OPTION,
+                null,
+                new Object[]{}, null // Esto quita los botones para que no sea intrusivo así bien feo xd
+        );
+
+        final javax.swing.JDialog dialog = optionPane.createDialog(this, "Nuevo Pedido");
+        dialog.setModal(false); // Permite que sigas usando el server mientras se ve la nota
+
+        // Timer para cerrar la notificación solita después de 2.5 segundos
+        javax.swing.Timer timer = new javax.swing.Timer(2500, e -> {
+            dialog.setVisible(false);
+            dialog.dispose();
+        });
+
+        timer.setRepeats(false);
+        timer.start();
+
+        dialog.setVisible(true);
+    }
     
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
