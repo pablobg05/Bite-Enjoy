@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package Pedido;
 
 import static Server.chat_server.dout;
@@ -18,39 +14,60 @@ public class chat_pedido extends javax.swing.JFrame {
     static DataInputStream dis;
     static DataOutputStream dout;
 
+    private volatile boolean corriendo = true; //para que llame mientras esté encendido 
    
     public chat_pedido() {
         initComponents();
-    }
 
-        public void iniciarChat() {
+        addWindowListener(new java.awt.event.WindowAdapter() {// otra vez el listener para que detecte cuando este la interfac activa
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                corriendo = false;
+                try { if (s != null) s.close(); } catch (Exception ex) {}
+            }
+        });
         conectarCliente();
     }
+
         
-        private void conectarCliente() {
+    private void conectarCliente() {
         new Thread(() -> {
-            try {
-                s = new Socket("localhost", 1201);
+            int esperaMs = 3000;//igual el tiempo de espera entre intento e intento
 
-                msg_area.append("\nConectado al servidor");
+            while (corriendo) {
+                try {
+                    msg_area.append("\nConectando al servidor...");
 
-                dis = new DataInputStream(s.getInputStream());
-                dout = new DataOutputStream(s.getOutputStream());
+                    s    = new Socket("localhost", 1201);
+                    dis  = new DataInputStream(s.getInputStream());
+                    dout = new DataOutputStream(s.getOutputStream());
 
-                String msgin = "";
+                    msg_area.append("\nConectado al servidor");
 
-                while (!msgin.equals("exit")) {
-                    msgin = dis.readUTF();
-                    msg_area.append("\nServer: " + msgin);
+                    // Escuchar mensajes mientras la conexión esté viva
+                    String msgin = "";
+                    while (corriendo && !msgin.equals("exit")) {
+                        msgin = dis.readUTF();
+                        msg_area.append("\nServer: " + msgin);
+                    }
+
+                } catch (Exception e) {
+                    javax.swing.SwingUtilities.invokeLater(() ->
+                        msg_area.append("") //aca por si quiero poner un mensaje cada vez que intente -----> nomás lo usé para pruebas, ignoralo SAMU
+                    );
+                    dout = null;
+                    dis  = null;
+
+                    try {
+                        Thread.sleep(esperaMs);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
                 }
-
-            } catch (Exception e) {
-                msg_area.append("\n[ERROR] No se pudo conectar al servidor");
-                e.printStackTrace();
             }
         }).start();
     }
-
         
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -156,35 +173,9 @@ public class chat_pedido extends javax.swing.JFrame {
         
     }//GEN-LAST:event_msg_sendActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(chat_pedido.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(chat_pedido.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(chat_pedido.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(chat_pedido.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-        //</editor-fold>
 
-        /* Create and display the form */
+    public static void main(String args[]) {
+
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 new chat_pedido().setVisible(true);

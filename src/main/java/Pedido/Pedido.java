@@ -12,9 +12,24 @@ public class Pedido extends javax.swing.JFrame {
     private Socket sc;
     private ObjectOutputStream salida;
     List <Orden> listaPedido = new ArrayList<>();
-
+    private volatile boolean corriendo = true; // para mantener trabajando la conección con el servidor continuamente
+    
+//    public Pedido() {
+//        initComponents();
+//        conectarAlServidor();
+//        cargarComboBox();
+//    }
     public Pedido() {
         initComponents();
+
+        addWindowListener(new java.awt.event.WindowAdapter() { //esta "addwindowlistener" detecta cuando el usuario cierre la ventana, ahí apaga el "corriendo" para cerrar el socket
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                corriendo = false;
+                try { if (sc != null) sc.close(); } catch (Exception ex) {}
+            }
+        });
+
         conectarAlServidor();
         cargarComboBox();
     }
@@ -40,6 +55,7 @@ public class Pedido extends javax.swing.JFrame {
         btnEliminar = new javax.swing.JButton();
         btnAgregar1 = new javax.swing.JButton();
         btnChat = new javax.swing.JButton();
+        BtnVip = new javax.swing.JToggleButton();
         jPanel2 = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
 
@@ -157,6 +173,10 @@ public class Pedido extends javax.swing.JFrame {
         });
         jPanel1.add(btnChat, new org.netbeans.lib.awtextra.AbsoluteConstraints(140, 250, 100, 30));
 
+        BtnVip.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        BtnVip.setText("VIP");
+        jPanel1.add(BtnVip, new org.netbeans.lib.awtextra.AbsoluteConstraints(260, 250, 90, 30));
+
         getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 70, 680, 290));
 
         jPanel2.setBackground(new java.awt.Color(102, 0, 0));
@@ -181,9 +201,37 @@ public class Pedido extends javax.swing.JFrame {
         try {
             // Revisamos que la conexión exista y no esté cerrada
             if (sc != null && !sc.isClosed()) {
+                if(txtId.getText().isEmpty()){
+                    javax.swing.JOptionPane.showMessageDialog(this, "Falta el Id");
+                    return;
+                } else if (!txtId.getText().matches("\\d+")){ 
+                    javax.swing.JOptionPane.showMessageDialog(this, "Solo ingrese números en el Id");
+                    return;
+                }
+                
+                if(txtNombre.getText().isEmpty()){
+                    javax.swing.JOptionPane.showMessageDialog(this, "falta el nombre");
+                    return;
+                }else if (!txtNombre.getText().matches("[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+")){
+                    javax.swing.JOptionPane.showMessageDialog(this, "Solo debe de ingresar letras en el nombre");
+                    return;                   
+                }
+                
+                if(listaPedido.isEmpty()){
+                    javax.swing.JOptionPane.showMessageDialog(this, "No has añadido ningún producto");
+                    return;
+                }
+                
+                
+                
                 
                 // Creamos el objeto con los datos de los campos de texto
                 PedidoClass p = new PedidoClass(txtId.getText(), txtNombre.getText(), cmbTipo.getSelectedItem().toString(), listaPedido);
+                
+                if(BtnVip.isSelected()){ //para "marcarlo" para la cola prioritaria
+                    p.setVIP(true);
+                } 
+
                 p.setOrigen("PCPEDIDOS");
                 
                 // Lo enviamos por el "cable"
@@ -225,8 +273,6 @@ public class Pedido extends javax.swing.JFrame {
     chat_pedido chat = new chat_pedido();
     chat.setVisible(true);
     chat.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-    // 👇 ESTO ES LO QUE FALTABA
-    chat.iniciarChat();
     }//GEN-LAST:event_btnChatActionPerformed
 
     public void actualizarTablaPedido() {
@@ -258,12 +304,30 @@ public class Pedido extends javax.swing.JFrame {
     
     private void conectarAlServidor() {
         new Thread(() -> {
-            try {
-                sc = new Socket("localhost", 8080); //aca va lo del puerto ahora --------------------------------para cuando lo cambiemos
-                salida = new ObjectOutputStream(sc.getOutputStream());
-                System.out.println("Conectado al servidor con éxito.");
-            } catch (Exception e) {
-                System.err.println("No se pudo conectar al iniciar: " + e.getMessage());
+            int esperaMs = 3000; //tiempo entre intento e intento 
+
+            while (corriendo) {  //este while es para que siempre que esté la ventana siga intentando conectarse
+                try {
+                    sc     = new Socket("localhost", 8080);
+                    salida = new ObjectOutputStream(sc.getOutputStream());
+                    System.out.println("Conectado al servidor con éxito.");//hace la conección
+
+                    
+                    while (corriendo && !sc.isClosed()) {// Espera aquí mientras la conexión esté viva
+                        Thread.sleep(1000);
+                    }
+
+                } catch (Exception e) {// Si falla, limpia y vuelve a intentar
+                    
+                    salida = null;
+                    sc     = null;
+                    try {
+                        Thread.sleep(esperaMs);   // espera 3 segundos
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
+                }
             }
         }).start();
     }
@@ -316,6 +380,7 @@ public class Pedido extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JToggleButton BtnVip;
     private javax.swing.JButton btnAgregar;
     private javax.swing.JButton btnAgregar1;
     private javax.swing.JButton btnChat;

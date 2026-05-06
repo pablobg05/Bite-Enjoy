@@ -9,15 +9,37 @@ import java.util.Queue;
 import java.util.List;
 import Clases.PedidoClass;
 import java.io.ObjectOutputStream;
+import java.util.PriorityQueue;
 import javax.swing.JFrame;
 
 
 public class ServerView extends javax.swing.JFrame {
     // --------------------ACA DECLARO LAS ESTRUCTURAS-------------------------
-    public static Queue<PedidoClass> colaPedidos = new LinkedList<>(); //Pendientes por hacer
     public static List<PedidoClass> listaPedidos = new LinkedList<>(); //Para el historial
-    public static Queue<PedidoClass> colaRestaurante = new LinkedList<>(); //Pendientes del restaurante
-    public static Queue<PedidoClass> colaDelivery = new LinkedList<>(); //Pendientes del delivery
+//    public static Queue<PedidoClass> colaPedidos = new LinkedList<>(); //Pendientes por hacer
+//    public static Queue<PedidoClass> colaRestaurante = new LinkedList<>(); //Pendientes del restaurante
+//    public static Queue<PedidoClass> colaDelivery = new LinkedList<>(); //Pendientes del delivery
+
+    // 2. Cola General con Prioridad
+    public static Queue<PedidoClass> colaPedidos = new PriorityQueue<>((p1, p2) -> {
+        if (p1.isVIP() && !p2.isVIP()) return -1;
+        if (!p1.isVIP() && p2.isVIP()) return 1;
+        return 0; // Si ambos son iguales, mantienen orden de llegada
+    });
+
+    // 3. Cola de Restaurante con Prioridad
+    public static Queue<PedidoClass> colaRestaurante = new PriorityQueue<>((p1, p2) -> {
+        if (p1.isVIP() && !p2.isVIP()) return -1;
+        if (!p1.isVIP() && p2.isVIP()) return 1;
+        return 0;
+    });
+
+    // 4. Cola de Delivery con Prioridad
+    public static Queue<PedidoClass> colaDelivery = new PriorityQueue<>((p1, p2) -> {
+        if (p1.isVIP() && !p2.isVIP()) return -1;
+        if (!p1.isVIP() && p2.isVIP()) return 1;
+        return 0;
+    });
 
     public ServerView() {
         initComponents();
@@ -414,8 +436,14 @@ public class ServerView extends javax.swing.JFrame {
                 vista.setVisible(true);
             }
         });
+        
+        iniciarServidorPedidos(vista);
+        iniciarServidorNotificacionesDelivery(vista);
 
-        // --- ESTO ES EL HILO PARA QUE EL SERVIDOR NO CONGELE LA VENTANA ---
+    }
+    
+    
+    private static void iniciarServidorPedidos(ServerView vista){
         new Thread(() -> {
             // Creamos el socket de forma que permita reutilizar el puerto inmediatamente si reiniciamos
             try {
@@ -452,11 +480,13 @@ public class ServerView extends javax.swing.JFrame {
                                     colaDelivery.add(p);
 
                                     try {
+//                                        PedidoClass pedidoADespachar = colaDelivery.peek(); //Para no mandarle al delivery según entran y tome en cuenta el VIP
+                                        
                                         // La IP de la PC 3 (Delivery) y un puerto nuevo, ej: 5004
                                         Socket socketPC3 = new Socket("localhost", 5004); // IP DEL PC 3 (DELIVERY)
                                         ObjectOutputStream salidaPC3 = new ObjectOutputStream(socketPC3.getOutputStream());
 
-                                        salidaPC3.writeObject(p); // Le mandamos el pedido completo
+                                        salidaPC3.writeObject(p); // Le mandamos el pedido completo (tomando en cuenta lo del VIP)
                                         salidaPC3.flush();
                                         socketPC3.close(); // Cerramos después de enviar
                                     } catch (Exception e) {
@@ -488,8 +518,10 @@ public class ServerView extends javax.swing.JFrame {
                 System.err.println("Error en el servidor: " + e.getMessage());
             }
         }).start(); // Hasta acá es donde arrancamos el hilo
-
-        // --- HILO PARA ESCUCHAR RESPUESTAS DE PC 3 (DELIVERY) ---
+    }
+    
+    
+    public static void iniciarServidorNotificacionesDelivery(ServerView vista){
         new Thread(() -> {
             try {
                 ServerSocket serverRespuestas = new ServerSocket(5005);
@@ -543,6 +575,8 @@ public class ServerView extends javax.swing.JFrame {
             }
         }).start();   
     }
+    
+    
 
     private static void imprimirEstadoEstructuras() { //Solo pa ver si todo nice o no está nice
         System.out.println("\n======= ESTADO ACTUAL DEL SISTEMA =======");
@@ -571,23 +605,42 @@ public class ServerView extends javax.swing.JFrame {
         }
     }
 
-    public void actualizarTablaPendientes() {
-        javax.swing.table.DefaultTableModel modelo = (javax.swing.table.DefaultTableModel) tblPendientes.getModel(); // reinicia la tabla y saca modelo
+    public void actualizarTablaPendientes() { //cambié este método para que reordene segun la prioridad - Pablo Romero
+        javax.swing.table.DefaultTableModel modelo = (javax.swing.table.DefaultTableModel) tblPendientes.getModel(); 
         modelo.setRowCount(0);
 
-        modelo.setColumnIdentifiers(new Object[]{"Id", "Cliente", "Tipo", "Total"}); // columnas - AGREGADO TOTAL
+        modelo.setColumnIdentifiers(new Object[]{"Id", "Cliente", "Tipo", "Total"}); 
 
         // --- CONFIGURACIÓN DE DISEÑO ---
         tblPendientes.setRowHeight(30);
         tblPendientes.getColumnModel().getColumn(0).setMaxWidth(80);
 
-        if (colaPedidos != null) { // recorrer la lista el for de abajo jaja
-            for (PedidoClass p : colaPedidos) {
-                // Extraemos los datos del objeto PedidoClass para llenar las columnas e incluimos el Total calculado
-                modelo.addRow(new Object[]{p.getId(), p.getCliente(), p.getTipo(), "Q" + p.getTotalPedido()});
+        if (colaPedidos != null && !colaPedidos.isEmpty()) {
+            // CORRECCIÓN AQUÍ: Nombre de variable sin espacios
+            java.util.List<PedidoClass> listaTemporal = new java.util.ArrayList<>(colaPedidos);
+
+            // Ordenamos la lista para que en la tabla aparezcan los VIP arriba
+            listaTemporal.sort((p1, p2) -> {
+                if (p1.isVIP() && !p2.isVIP()) return -1;
+                if (!p1.isVIP() && p2.isVIP()) return 1;
+                return 0;
+            });
+
+            for (PedidoClass p : listaTemporal) {
+                // Un toque visual para distinguir los prioritarios
+                String nombreAMostrar = p.isVIP() ? "⭐ " + p.getCliente() : p.getCliente();
+
+                modelo.addRow(new Object[]{
+                    p.getId(), 
+                    nombreAMostrar, 
+                    p.getTipo(), 
+                    "Q" + p.getTotalPedido()
+                });
             }
         }
     }
+    
+    
 
     public void actualizarEstadoServidor(javax.swing.JLabel etiqueta, boolean encendido) {
         // Si encendido es true usa greenCircle, si es false usa redCircle

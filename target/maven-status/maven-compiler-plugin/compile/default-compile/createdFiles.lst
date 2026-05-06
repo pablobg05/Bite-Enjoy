@@ -1,7 +1,9 @@
 Server\Restaurante.class
 Server\ServerView$3.class
 Pedido\Pedido$2.class
+Pedido\Pedido$7.class
 Clases\Orden.class
+Pedido\chat_pedido$3.class
 Main\ProyectoRestaurante$3.class
 Clases\ArbolBPlus.class
 Pedido\chat_pedido$2.class
@@ -16,6 +18,7 @@ Main\ProyectoRestaurante.class
 Main\ProyectoRestaurante$4.class
 Clases\PedidoClass.class
 Server\ServerView$4.class
+Restaurant\DeliveryUI$1.class
 Server\ServerView$2.class
 Pedido\Pedido$3.class
 Server\ServerView.class

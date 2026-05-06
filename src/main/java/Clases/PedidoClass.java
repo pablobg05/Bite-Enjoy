@@ -14,6 +14,7 @@ public class PedidoClass implements Serializable{
     private boolean estado;
     private String origen;
     private Date fecha;
+    private boolean VIP;
 
     
     public PedidoClass(String id, String cliente, String tipo, List lista) {
@@ -23,6 +24,7 @@ public class PedidoClass implements Serializable{
         this.comidas = lista;
         this.estado = false;
         this.fecha = new Date();
+        this.VIP = false;
     }
     
     public double getTotalPedido() {
@@ -103,5 +105,12 @@ public class PedidoClass implements Serializable{
         this.fecha = fecha;
     }
 
-    
+    public boolean isVIP() {
+        return VIP;
+    }
+
+    public void setVIP(boolean VIP) {
+        this.VIP = VIP;
+    }
+
 }

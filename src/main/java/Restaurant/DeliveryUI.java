@@ -17,8 +17,13 @@ public class DeliveryUI extends JFrame {
     private ObjectOutputStream salidaServer;
     private Socket socketAlServer;
     
-    // --- NUEVA ESTRUCTURA DE COLA ---
-    private Queue<PedidoClass> colaLocal = new LinkedList<>();
+    private volatile boolean corriendo = true;
+    
+    private Queue<PedidoClass> colaLocal = new java.util.PriorityQueue<>((p1, p2) -> {
+        if (p1.isVIP() && !p2.isVIP()) return -1;
+        if (!p1.isVIP() && p2.isVIP()) return 1;
+        return 0;
+    });
     
     private final String SERVER_IP = "localhost"; // IP del Servidor (PC 2) para devolver los datos ---------------------------------------------------------
 
@@ -27,6 +32,14 @@ public class DeliveryUI extends JFrame {
         setSize(700,500);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
+        
+        addWindowListener(new java.awt.event.WindowAdapter() { //Igual para que se detenga la conección al cerrar la ventana
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                corriendo = false;
+                try { if (socketAlServer != null) socketAlServer.close(); } catch (Exception ex) {}
+            }
+        });
         
         // --- HEADER ---
         JPanel header = new JPanel(new BorderLayout());
@@ -59,19 +72,37 @@ public class DeliveryUI extends JFrame {
         iniciarServidorInterno();
     }
     
-    private void conectarAlServidorRespuesta() {
+    private void conectarAlServidorRespuesta() {//se conecta como cliente para avisar que ya se envió el pedido
         new Thread(() -> {
-            try {
-                socketAlServer = new Socket(SERVER_IP, 5005);
-                salidaServer = new ObjectOutputStream(socketAlServer.getOutputStream());
-                System.out.println("Conexión persistente con el servidor establecida.");
-            } catch (Exception e) {
-                System.err.println("Error conectando al servidor: " + e.getMessage());
+            int esperaMs = 3000;//tiempo entre intento e intento
+
+            while (corriendo) {
+                try {
+                    socketAlServer = new Socket(SERVER_IP, 5005);
+                    salidaServer   = new ObjectOutputStream(socketAlServer.getOutputStream());
+                    System.out.println("Conexión con el servidor establecida.");
+                    
+                    while (corriendo && !socketAlServer.isClosed()) {// Mantener vivo el hilo mientras la conexión esté activa
+                        Thread.sleep(1000);
+                    }
+
+                } catch (Exception e) {
+                    System.err.println("Sin conexión al servidor, reintentando en 3s...");
+                    salidaServer   = null;
+                    socketAlServer = null;
+
+                    try {
+                        Thread.sleep(esperaMs);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
+                }
             }
         }).start();
     }
     
-    private void iniciarServidorInterno() { 
+    private void iniciarServidorInterno() { //recibe los pedidos entrantes, escucha en el puerto asignado
         new Thread(() -> {
             try {
                 ServerSocket servidorDelivery = new ServerSocket(5004);
@@ -103,12 +134,22 @@ public class DeliveryUI extends JFrame {
         }
     }
 
-    private void actualizarInterfaz() { //va actualizando los cambios 
+    private void actualizarInterfaz() { 
         SwingUtilities.invokeLater(() -> {
             orders.removeAll();
-            for (PedidoClass p : colaLocal) {
+
+            // Convertimos a lista y ordenamos para que el VIP salga arriba en la pantalla
+            java.util.List<PedidoClass> listaVisual = new java.util.ArrayList<>(colaLocal);
+            listaVisual.sort((p1, p2) -> {
+                if (p1.isVIP() && !p2.isVIP()) return -1;
+                if (!p1.isVIP() && p2.isVIP()) return 1;
+                return 0;
+            });
+
+            for (PedidoClass p : listaVisual) {
                 orders.add(buildSimpleRow(p));
             }
+
             orders.revalidate();
             orders.repaint();
         });
