@@ -3,6 +3,7 @@ package Clases;
 import java.util.ArrayList;
 import java.util.List;
 import java.io.Serializable;
+import java.util.Date;
 
 public class PedidoClass implements Serializable {
     private String id;
@@ -11,6 +12,7 @@ public class PedidoClass implements Serializable {
     private List<Orden> comidas; 
     private boolean estado;
     private String origen;
+    private Date fecha;
 
     
     public PedidoClass(String id, String cliente, String tipo, List lista) {
@@ -19,6 +21,7 @@ public class PedidoClass implements Serializable {
         this.tipo = tipo;
         this.comidas = lista;
         this.estado = false;
+        this.fecha = new Date();
     }
     
     public double getTotalPedido() {
@@ -36,6 +39,12 @@ public class PedidoClass implements Serializable {
         }
         return listado;
     }
+    
+    public String getFechaConFormato() {
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("HH:mm:ss");
+        return sdf.format(fecha);
+    }
+
 
     public String getId() {
         return id;
@@ -85,5 +94,13 @@ public class PedidoClass implements Serializable {
         this.origen = origen;
     }
 
- 
+    public Date getFecha() {
+        return fecha;
+    }
+
+    public void setFecha(Date fecha) {
+        this.fecha = fecha;
+    }
+
+    
 }

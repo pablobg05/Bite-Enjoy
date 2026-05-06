@@ -23,7 +23,35 @@ public class chat_pedido extends javax.swing.JFrame {
         initComponents();
     }
 
-  
+        public void iniciarChat() {
+        conectarCliente();
+    }
+        
+        private void conectarCliente() {
+        new Thread(() -> {
+            try {
+                s = new Socket("localhost", 1201);
+
+                msg_area.append("\nConectado al servidor");
+
+                dis = new DataInputStream(s.getInputStream());
+                dout = new DataOutputStream(s.getOutputStream());
+
+                String msgin = "";
+
+                while (!msgin.equals("exit")) {
+                    msgin = dis.readUTF();
+                    msg_area.append("\nServer: " + msgin);
+                }
+
+            } catch (Exception e) {
+                msg_area.append("\n[ERROR] No se pudo conectar al servidor");
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+        
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -109,18 +137,22 @@ public class chat_pedido extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void msg_sendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_msg_sendActionPerformed
-        // TODO add your handling code here:
-        
-         try{
-        String msg="";
-        msg=msg_text.getText();
+        try {
+        if (dout == null) {
+            msg_area.append("\n[ERROR] No conectado al servidor");
+            return;
+        }
+
+        String msg = msg_text.getText();
         dout.writeUTF(msg);
+
+        msg_area.append("\nYo: " + msg);
+
         msg_text.setText("");
-        }
-        catch(Exception e)
-        {
-        //handle the exception here
-        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
         
     }//GEN-LAST:event_msg_sendActionPerformed
 
@@ -159,21 +191,8 @@ public class chat_pedido extends javax.swing.JFrame {
             }
         });
         
-         try {
-            String msgin = "";
-            
-            s = new Socket("localhost",1201); // aqui seria que cambies la IP
-            dis = new DataInputStream(s.getInputStream());
-            dout = new DataOutputStream(s.getOutputStream());
-
-            while (!msgin.equals("exit")) {
-                msgin = dis.readUTF();
-                msg_area.setText(msg_area.getText() + "\n Server : " + msgin);
-            }
-
-        } catch (Exception e) {
-            //handle the exception here
-        }
+        
+  
 
         
     }

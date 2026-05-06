@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.util.List;
 import Clases.PedidoClass;
 import java.util.ArrayList;
+import javax.swing.JFrame;
 
 public class Pedido extends javax.swing.JFrame {
     private Socket sc;
@@ -221,9 +222,11 @@ public class Pedido extends javax.swing.JFrame {
     }//GEN-LAST:event_btnAgregar1ActionPerformed
 
     private void btnChatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnChatActionPerformed
-       chat_pedido newFrame = new chat_pedido();
-       
-       newFrame.setVisible(true);
+    chat_pedido chat = new chat_pedido();
+    chat.setVisible(true);
+    chat.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    // 👇 ESTO ES LO QUE FALTABA
+    chat.iniciarChat();
     }//GEN-LAST:event_btnChatActionPerformed
 
     public void actualizarTablaPedido() {

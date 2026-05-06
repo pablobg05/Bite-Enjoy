@@ -9,6 +9,7 @@ import java.util.Queue;
 import java.util.List;
 import Clases.PedidoClass;
 import java.io.ObjectOutputStream;
+import javax.swing.JFrame;
 
 
 public class ServerView extends javax.swing.JFrame {
@@ -397,9 +398,11 @@ public class ServerView extends javax.swing.JFrame {
 
     // Para llamar al chat
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        chat_server newFrame = new chat_server();
+        chat_server chat = new chat_server();
         
-        newFrame.setVisible(true);
+        chat.setVisible(true);
+        chat.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
     }//GEN-LAST:event_jButton1ActionPerformed
 
 
@@ -497,39 +500,56 @@ public class ServerView extends javax.swing.JFrame {
                 new Thread(() -> {
                     try {
                         ServerSocket serverRespuestas = new ServerSocket(5005);
+                        serverRespuestas.setReuseAddress(true);
+
                         while (true) {
-                            Socket pc3 = serverRespuestas.accept();
-                            ObjectInputStream entrada = new ObjectInputStream(pc3.getInputStream());
-                            PedidoClass pedidoListo = (PedidoClass) entrada.readObject();
+                            // Se queda esperando a que la PC 3 se conecte
+                            Socket pc3 = serverRespuestas.accept(); 
 
-                            // 1. Notificación al Servidor
-                            vista.mostrarNotificacion("¡Delivery en camino! Pedido #" + pedidoListo.getId() + " de " + pedidoListo.getCliente());
+                            // ¡PC 3 CONECTADA! Prendemos el LED y se queda así mientras no se cierre el socket
+                            vista.actualizarEstadoServidor(vista.lblPcDelivery, true);
+                            System.out.println("PC Delivery (PC 3) conectada.");
 
-                            // 2. Actualizar las estructuras
-                            // Buscamos el pedido en la cola de pendientes y lo quitamos
-                            colaPedidos.removeIf(p -> p.getId().equals(pedidoListo.getId()));
-                            colaDelivery.removeIf(p -> p.getId().equals(pedidoListo.getId()));
+                            try (ObjectInputStream entrada = new ObjectInputStream(pc3.getInputStream())) {
+                                while (true) {
+                                    // Escucha permanentemente los "Listo" sin cerrar la conexión
+                                    PedidoClass pedidoListo = (PedidoClass) entrada.readObject();
 
-                            // 3. Actualizamos el estado en el historial (para que salga como FINALIZADO)
-                            for(PedidoClass p : listaPedidos){
-                                if(p.getId().equals(pedidoListo.getId())){
-                                    p.setEstado(true);
-                                    break;
+                                    // 1. Notificación
+                                    vista.mostrarNotificacion("¡Pedido #" + pedidoListo.getId() + " en camino!");
+
+                                    // 2. Actualizar estructuras
+                                    colaPedidos.removeIf(p -> p.getId().equals(pedidoListo.getId()));
+                                    colaDelivery.removeIf(p -> p.getId().equals(pedidoListo.getId()));
+
+                                    // 3. Actualizar historial
+                                    for(PedidoClass p : listaPedidos){
+                                        if(p.getId().equals(pedidoListo.getId())){
+                                            p.setEstado(true);
+                                            break;
+                                        }
+                                    }
+
+                                    // 4. Refrescar tablas
+                                    vista.actualizarTablaPendientes();
+                                    vista.actualizarTablaHistorial();
+                                }
+                            } catch (Exception e) {
+                                // Si la PC 3 se cierra, el socket se rompe y entra aquí
+                                System.out.println("PC Delivery desconectada.");
+                            } finally {
+                                // Se apagará el LED solo cuando la conexión se pierda
+                                vista.actualizarEstadoServidor(vista.lblPcDelivery, false);
+                                if(!pc3.isClosed()) {
+                                    try { pc3.close(); } catch (Exception ex) {}
                                 }
                             }
-
-                            // 4. Refrescar las tablas
-                            vista.actualizarTablaPendientes();
-                            vista.actualizarTablaHistorial();
-
-                            pc3.close();
                         }
                     } catch (Exception e) {
-                        System.err.println("Error en hilo de respuestas: " + e.getMessage());
+                        System.err.println("Error en puerto 5005: " + e.getMessage());
                     }
-                }).start();
+                }).start();    
             }
-
 
         private static void imprimirEstadoEstructuras() { //Solo pa ver si todo nice o no está nice
             System.out.println("\n======= ESTADO ACTUAL DEL SISTEMA =======");

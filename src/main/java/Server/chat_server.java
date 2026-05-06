@@ -16,8 +16,53 @@ public class chat_server extends javax.swing.JFrame {
  
     public chat_server() {
         initComponents();
+        
+            // Cerrar conexión al cerrar ventana
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                cerrarConexion();
+            }
+        });
+        
+        iniciarServidor();
     }
+    
+     private void iniciarServidor() {
+    new Thread(() -> {
+        try {
+            ss = new ServerSocket();
+            ss.setReuseAddress(true);
+            ss.bind(new java.net.InetSocketAddress(1201));
 
+            msg_area.append("\nEsperando cliente...");
+
+            while (true) { 
+                s = ss.accept();
+
+                msg_area.append("\nCliente conectado");
+
+                dis = new DataInputStream(s.getInputStream());
+                dout = new DataOutputStream(s.getOutputStream());
+
+                new Thread(() -> {
+                    try {
+                        String msgin = "";
+                        while (!msgin.equals("exit")) {
+                            msgin = dis.readUTF();
+                            msg_area.append("\nCliente: " + msgin);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }).start();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }).start();
+}
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -104,45 +149,41 @@ public class chat_server extends javax.swing.JFrame {
 
     private void msg_sendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_msg_sendActionPerformed
        
-        
-        try{
-        String msg="";
-        msg=msg_text.getText();
-        dout.writeUTF(msg);
-        msg_text.setText("");
-        }
-        catch(Exception e)
-        {
-        
+        try {
+            if (dout == null) {
+                msg_area.append("\n[ERROR] No hay cliente conectado");
+                return;
+            }
+
+            String msg = msg_text.getText();
+            dout.writeUTF(msg);
+            msg_area.append("\nYo: " + msg);
+            msg_text.setText("");
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
          
         
     }//GEN-LAST:event_msg_sendActionPerformed
 
- 
+    
+    public static void cerrarConexion() {
+    try {
+        if (dis != null) dis.close();
+        if (dout != null) dout.close();
+        if (s != null) s.close();
+        if (ss != null) ss.close(); // solo en server
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}
+    
     public static void main(String args[]) {
  
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new chat_server().setVisible(true);
-            }
+           java.awt.EventQueue.invokeLater(() -> {
+            new chat_server().setVisible(true);
         });
-
-        try {
-            String msgin = "";
-            ss = new ServerSocket(1201);
-            s = ss.accept();
-            dis = new DataInputStream(s.getInputStream());
-            dout = new DataOutputStream(s.getOutputStream());
-
-            while (!msgin.equals("exit")) {
-                msgin = dis.readUTF();
-                msg_area.setText(msg_area.getText() + "\n Restaurante : " + msgin);
-            }
-
-        } catch (Exception e) {
-            
-        }
 
     }
 
