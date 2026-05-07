@@ -3,139 +3,190 @@ package Restaurant;
 import Clases.PedidoClass;
 import Clases.Orden;
 import java.awt.*;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Queue;
 import javax.swing.*;
 
 public class RestaurantUI extends JFrame {
-    
+
     private JPanel orders;
-    // Server IP
-    private final String SERVER_IP = "localhost";
-    public RestaurantUI(){
-        setTitle("Restaurante");
-        setSize(700,500);
-        setDefaultCloseOperation(
-                JFrame.EXIT_ON_CLOSE
-        );
-        
+    private ObjectOutputStream salidaServer;
+    private Socket socketAlServer;
+
+    private volatile boolean corriendo = true;
+
+    private Queue<PedidoClass> colaLocal = new java.util.PriorityQueue<>((p1, p2) -> {
+        if (p1.isVIP() && !p2.isVIP()) return -1;
+        if (!p1.isVIP() && p2.isVIP()) return 1;
+        return 0;
+    });
+
+    private final String SERVER_IP = "localhost"; //-------------------------------------------------------------------------------------------.-----------> IP DEL SERVER
+
+    public RestaurantUI() {
+        setTitle("Pantalla de Restaurante");
+        setSize(700, 500);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
-        setVisible(true);
-        
-        JPanel header = new JPanel(
-          new BorderLayout()
-        );
-        header.setBackground(new Color(45, 45, 45));
-        header.setBorder(
-                BorderFactory.createEmptyBorder(
-                        12, 16, 12, 16
-                )
-        );
-        
-        JLabel title = new JLabel(
-                "Restaurante"
-        );
-        title.setForeground(Color.WHITE);
-        
-        JLabel status = new JLabel("● Connected");
-        status.setForeground(new Color(100,220,100));
-        
-        header.add(title, BorderLayout.WEST);
-        header.add(status, BorderLayout.EAST);
-        add(header, BorderLayout.NORTH);
-        
-        orders = new JPanel();
-        orders.setLayout(
-                new BoxLayout(
-                        orders, BoxLayout.Y_AXIS
-                )
-        );
-        orders.setBackground(Color.WHITE);
-        
-        JScrollPane scroll = new JScrollPane(
-                orders
-        );
-        scroll.setBorder(null);
-        
-        add(scroll, BorderLayout.CENTER);
-    }
-    
-    private JPanel buildRow(PedidoClass pedido){
-        JPanel row = new JPanel(
-                new BorderLayout()
-        );
-        row.setBorder(
-                BorderFactory.createCompoundBorder(
-                        BorderFactory.createMatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY),
-                        BorderFactory.createEmptyBorder(10, 14, 10, 14)
-                )
-        );
-        row.setBackground(Color.WHITE);
-        row.setMaximumSize(new Dimension(
-                Integer.MAX_VALUE, 64
-        ));
-        
-        StringBuilder platosText = new StringBuilder("<html><b>ID: #" + pedido.getId() + " - " + pedido.getCliente() + "</b><br>");
-        platosText.append("<font color='#555555'>");
-        for (Orden o : pedido.getComidas()) {
-            platosText.append("- ").append(o.getNombreComida()).append("<br>");
-        }
-        platosText.append("</font></html>");
-        
-        JLabel info = new JLabel(platosText.toString());
-        
-        JButton btn = new JButton("Listo");
-        
-        JLabel badge = new JLabel("• Listo");
-        badge.setForeground(new Color(60,160,80));
-        
-        btn.addActionListener(e -> {
-            // Cambiar boton por label verde
-            row.remove(btn);
-            row.add(badge, BorderLayout.EAST);
-            
-            // Siempre agregar cuando se hacen cambios así
-            row.revalidate();
-            row.repaint();
-            
-            // Aqui se va a mandar el mensaje al server después
-            pedido.setEstado(true);
-            enviarEstadoAlServer(pedido);
-            
-            System.out.println("Pedido " + pedido.getId() + " marcado como LISTO");
+
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                corriendo = false;
+                try { if (socketAlServer != null) socketAlServer.close(); } catch (Exception ex) {}
+            }
         });
-        
-        row.add(info, BorderLayout.WEST);
-        row.add(btn, BorderLayout.EAST);
-        return row;
+
+        // --- HEADER ---
+        JPanel header = new JPanel(new BorderLayout());
+        header.setBackground(new Color(45, 45, 45));
+        header.setBorder(BorderFactory.createEmptyBorder(12, 16, 12, 16));
+
+        JLabel title = new JLabel("Pedidos de Restaurante");
+        title.setForeground(Color.WHITE);
+        title.setFont(new Font("Arial", Font.BOLD, 16));
+
+        JButton btnDespachar = new JButton("Pedido Listo");
+        btnDespachar.addActionListener(e -> despacharSiguiente());
+
+        header.add(title, BorderLayout.WEST);
+        header.add(btnDespachar, BorderLayout.EAST);
+        add(header, BorderLayout.NORTH);
+
+        // --- PANEL DE ÓRDENES ---
+        orders = new JPanel();
+        orders.setLayout(new BoxLayout(orders, BoxLayout.Y_AXIS));
+        orders.setBackground(Color.WHITE);
+
+        JScrollPane scroll = new JScrollPane(orders);
+        scroll.setBorder(null);
+        add(scroll, BorderLayout.CENTER);
+
+        setVisible(true);
+        conectarAlServidorRespuesta();
+        iniciarServidorInterno();
     }
-    
-    private void enviarEstadoAlServer(PedidoClass pedido) {
+
+    private void conectarAlServidorRespuesta() {
         new Thread(() -> {
-            try (Socket socket = new Socket(SERVER_IP, 5004)) {
-                ObjectOutputStream salida = new ObjectOutputStream(socket.getOutputStream());
-                salida.writeObject(pedido);
-                salida.flush();
-            } catch (Exception ex) {
-                System.err.println("No se pudo conectar al servidor para avisar.");
+            int esperaMs = 3000;
+
+            while (corriendo) {
+                try {
+                    socketAlServer = new Socket(SERVER_IP, 5005);
+                    salidaServer   = new ObjectOutputStream(socketAlServer.getOutputStream());
+                    salidaServer.writeObject("RESTAURANTE"); // identificador
+                    salidaServer.flush();
+                    System.out.println("Conexión con el servidor establecida.");
+
+                    while (corriendo && !socketAlServer.isClosed()) {
+                        Thread.sleep(1000);
+                    }
+
+                } catch (Exception e) {
+                    System.err.println("Sin conexión al servidor, reintentando en 3s...");
+                    salidaServer   = null;
+                    socketAlServer = null;
+
+                    try {
+                        Thread.sleep(esperaMs);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
+                }
             }
         }).start();
     }
-    
-    public void addOrder(PedidoClass pedido) {
+
+    private void iniciarServidorInterno() {
+        new Thread(() -> {
+            try {
+                ServerSocket servidorRestaurante = new ServerSocket(5006); // puerto del restaurante
+                while (true) {
+                    Socket cliente = servidorRestaurante.accept();
+                    ObjectInputStream entrada = new ObjectInputStream(cliente.getInputStream());
+                    PedidoClass pedido = (PedidoClass) entrada.readObject();
+
+                    colaLocal.offer(pedido);
+                    actualizarInterfaz();
+
+                    cliente.close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    private void despacharSiguiente() {
+        PedidoClass pedido = colaLocal.poll();
+        if (pedido != null) {
+            pedido.setEstado(true);
+            enviarEstadoAlServer(pedido);
+            actualizarInterfaz();
+            System.out.println("Pedido " + pedido.getId() + " despachado.");
+        } else {
+            JOptionPane.showMessageDialog(this, "No hay pedidos pendientes.");
+        }
+    }
+
+    private void actualizarInterfaz() {
         SwingUtilities.invokeLater(() -> {
-          JPanel row = buildRow(pedido);
-          orders.add(row, 0); 
-          orders.revalidate();
-          orders.repaint();
+            orders.removeAll();
+
+            java.util.List<PedidoClass> listaVisual = new java.util.ArrayList<>(colaLocal);
+            listaVisual.sort((p1, p2) -> {
+                if (p1.isVIP() && !p2.isVIP()) return -1;
+                if (!p1.isVIP() && p2.isVIP()) return 1;
+                return 0;
+            });
+
+            for (PedidoClass p : listaVisual) {
+                orders.add(buildSimpleRow(p));
+            }
+
+            orders.revalidate();
+            orders.repaint();
         });
     }
 
-      // launch the window — always use
-      // invokeLater here too
+    private JPanel buildSimpleRow(PedidoClass pedido) {
+        JPanel row = new JPanel(new BorderLayout());
+        row.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY),
+                BorderFactory.createEmptyBorder(10, 14, 10, 14)
+        ));
+        row.setBackground(pedido.isVIP() ? new Color(255, 250, 230) : Color.WHITE); // fondo dorado para VIP
+        row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 100));
+
+        String prefijo = pedido.isVIP() ? "⭐ VIP - " : "";
+        StringBuilder platosText = new StringBuilder("<html><b>" + prefijo + "ID: #" + pedido.getId() + " - " + pedido.getCliente() + "</b><br>");
+        for (Orden o : pedido.getComidas()) {
+            platosText.append("- ").append(o.getNombreComida()).append(" ");
+        }
+        platosText.append("</html>");
+
+        row.add(new JLabel(platosText.toString()), BorderLayout.CENTER);
+        return row;
+    }
+
+    private void enviarEstadoAlServer(PedidoClass pedido) {
+        try {
+            if (salidaServer != null) {
+                salidaServer.writeObject(pedido);
+                salidaServer.flush();
+                salidaServer.reset();
+            }
+        } catch (Exception ex) {
+            System.err.println("No se pudo conectar al servidor para avisar.");
+        }
+    }
+
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            RestaurantUI ui = new RestaurantUI();
-        });
+        SwingUtilities.invokeLater(() -> new RestaurantUI());
     }
 }

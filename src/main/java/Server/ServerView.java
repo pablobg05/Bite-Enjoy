@@ -20,21 +20,21 @@ public class ServerView extends javax.swing.JFrame {
 //    public static Queue<PedidoClass> colaRestaurante = new LinkedList<>(); //Pendientes del restaurante
 //    public static Queue<PedidoClass> colaDelivery = new LinkedList<>(); //Pendientes del delivery
 
-    // 2. Cola General con Prioridad
+    // Cola General con Prioridad
     public static Queue<PedidoClass> colaPedidos = new PriorityQueue<>((p1, p2) -> {
         if (p1.isVIP() && !p2.isVIP()) return -1;
         if (!p1.isVIP() && p2.isVIP()) return 1;
         return 0; // Si ambos son iguales, mantienen orden de llegada
     });
 
-    // 3. Cola de Restaurante con Prioridad
+    // Cola de Restaurante con Prioridad
     public static Queue<PedidoClass> colaRestaurante = new PriorityQueue<>((p1, p2) -> {
         if (p1.isVIP() && !p2.isVIP()) return -1;
         if (!p1.isVIP() && p2.isVIP()) return 1;
         return 0;
     });
 
-    // 4. Cola de Delivery con Prioridad
+    // Cola de Delivery con Prioridad
     public static Queue<PedidoClass> colaDelivery = new PriorityQueue<>((p1, p2) -> {
         if (p1.isVIP() && !p2.isVIP()) return -1;
         if (!p1.isVIP() && p2.isVIP()) return 1;
@@ -438,7 +438,7 @@ public class ServerView extends javax.swing.JFrame {
         });
         
         iniciarServidorPedidos(vista);
-        iniciarServidorNotificacionesDelivery(vista);
+        iniciarServidorNotificaciones(vista);
 
     }
     
@@ -476,14 +476,26 @@ public class ServerView extends javax.swing.JFrame {
 
                                 if (p.getTipo().equalsIgnoreCase("Restaurante")) { // Pendientes del restaurante
                                     colaRestaurante.add(p);
+                                    try {
+                                        
+                                        // La IP de la PC 4 (Restaurante) y un puerto nuevo 5006
+                                        Socket socketPC4 = new Socket("localhost", 5006); // ----------------------------------------------------------------------------------------------->IP DEL RESTAURANTE
+                                        ObjectOutputStream salidaPC4 = new ObjectOutputStream(socketPC4.getOutputStream());
+
+                                        salidaPC4.writeObject(p); // Le mandamos el pedido completo (tomando en cuenta lo del VIP)
+                                        salidaPC4.flush();
+                                        socketPC4.close(); // Cerramos después de enviar
+                                    } catch (Exception e) {
+                                        System.out.println("PC 3 no está conectada o disponible");
+                                    }
                                 } else if (p.getTipo().equalsIgnoreCase("Delivery")) { // Pendientes del delivery
                                     colaDelivery.add(p);
 
                                     try {
-//                                        PedidoClass pedidoADespachar = colaDelivery.peek(); //Para no mandarle al delivery según entran y tome en cuenta el VIP
+                                        //PedidoClass pedidoADespachar = colaDelivery.peek(); //Para no mandarle al delivery según entran y tome en cuenta el VIP
                                         
-                                        // La IP de la PC 3 (Delivery) y un puerto nuevo, ej: 5004
-                                        Socket socketPC3 = new Socket("localhost", 5004); // IP DEL PC 3 (DELIVERY)
+                                        // La IP de la PC 3 (Delivery) y un puerto nuevo 5004
+                                        Socket socketPC3 = new Socket("localhost", 5004); // ----------------------------------------------------------------------------------------------------->IP DELIVERY
                                         ObjectOutputStream salidaPC3 = new ObjectOutputStream(socketPC3.getOutputStream());
 
                                         salidaPC3.writeObject(p); // Le mandamos el pedido completo (tomando en cuenta lo del VIP)
@@ -521,61 +533,77 @@ public class ServerView extends javax.swing.JFrame {
     }
     
     
-    public static void iniciarServidorNotificacionesDelivery(ServerView vista){
-        new Thread(() -> {
+    public static void iniciarServidorNotificaciones(ServerView vista) {
+        new Thread (() -> { //Este hilo lo que hace es esperar a que alguien se conecte basicamente, y espera a que el siguiente llegue
             try {
                 ServerSocket serverRespuestas = new ServerSocket(5005);
                 serverRespuestas.setReuseAddress(true);
 
                 while (true) {
-                    // Se queda esperando a que la PC 3 se conecte
-                    Socket pc3 = serverRespuestas.accept();
+                    Socket cliente = serverRespuestas.accept();
 
-                    // ¡PC 3 CONECTADA! Prendemos el LED
-                    vista.actualizarEstadoServidor(vista.lblPcDelivery, true);
-                    System.out.println("PC Delivery (PC 3) conectada.");
+                    new Thread(() -> {//Esta onda crea n cantidad de hilos según quien se conecte, es un hilo dentro de un hilo, nombre esto si está tremendo inge JAJAJAJAJA, ya me dolió la cabeza xd
+                        String tipoCliente=""; //Es para ver el identificador que mandé de los UI del delivery y el de restaurant
+                        try (ObjectInputStream entrada = new ObjectInputStream(cliente.getInputStream())) {
 
-                    try (ObjectInputStream entrada = new ObjectInputStream(pc3.getInputStream())) {
-                        while (true) {
-                            // Escucha permanentemente los "Listo" sin cerrar la conexión
-                            PedidoClass pedidoListo = (PedidoClass) entrada.readObject();
+                            tipoCliente = (String) entrada.readObject(); //RECIBE EL IDENTIFICADOR DEL LOS DE DELIVERY Y RESTAURANT 
 
-                            // 1. Notificación
-                            vista.mostrarNotificacion("¡Pedido #" + pedidoListo.getId() + " en camino!");
-
-                            // 2. Actualizar estructuras
-                            colaPedidos.removeIf(p -> p.getId().equals(pedidoListo.getId()));
-                            colaDelivery.removeIf(p -> p.getId().equals(pedidoListo.getId()));
-
-                            // 3. Actualizar historial
-                            for (PedidoClass p : listaPedidos) {
-                                if (p.getId().equals(pedidoListo.getId())) {
-                                    p.setEstado(true);
-                                    break;
-                                }
+                            // Encender el LED correcto
+                            if (tipoCliente.equals("RESTAURANTE")) {
+                                vista.actualizarEstadoServidor(vista.lblPcRestaurante, true);
+                                System.out.println("RestaurantUI conectada.");
+                            } 
+                            if (tipoCliente.equals("DELIVERY")){
+                                vista.actualizarEstadoServidor(vista.lblPcDelivery, true);
+                                System.out.println("DeliveryUI conectada.");
                             }
 
-                            // 4. Refrescar tablas
-                            vista.actualizarTablaPendientes();
-                            vista.actualizarTablaHistorial();
+                            // Escuchar pedidos listos
+                            while (true) {
+                                PedidoClass pedidoListo = (PedidoClass) entrada.readObject();
+
+                                colaPedidos.removeIf(p -> p.getId().equals(pedidoListo.getId()));
+
+                                if (pedidoListo.getTipo().equalsIgnoreCase("Delivery")) {//si mactchea el identificador lo borra y muestra la noti
+                                    colaDelivery.removeIf(p -> p.getId().equals(pedidoListo.getId()));
+                                    vista.mostrarNotificacion("¡Pedido #" + pedidoListo.getId() + " en camino!");
+                                } else if (pedidoListo.getTipo().equalsIgnoreCase("Restaurante")) {//si mactchea el identificador lo borra y muestra la noti
+                                    colaRestaurante.removeIf(p -> p.getId().equals(pedidoListo.getId()));
+                                    vista.mostrarNotificacion("¡Pedido #" + pedidoListo.getId() + " listo en cocina!");
+                                }
+
+                                for (PedidoClass p : listaPedidos) { //para marcarlo como entregado
+                                    if (p.getId().equals(pedidoListo.getId())) {
+                                        p.setEstado(true);
+                                        break;
+                                    }
+                                }
+
+                                vista.actualizarTablaPendientes();
+                                vista.actualizarTablaHistorial();
+                            }
+
+                        } catch (Exception e) {
+                            System.out.println(tipoCliente + " desconectado.");
+                        } finally {
+                            // Apagar solo el LED del que se desconectó
+                            if (tipoCliente.equals("RESTAURANTE")) {
+                                vista.actualizarEstadoServidor(vista.lblPcRestaurante, false);
+                            } 
+                            if (tipoCliente.equals("DELIVERY")){
+                                vista.actualizarEstadoServidor(vista.lblPcDelivery, false);
+                            }
+                            try { cliente.close(); } catch (Exception ex) {}
                         }
-                    } catch (Exception e) {
-                        // Si la PC 3 se cierra, el socket se rompe y entra aquí
-                        System.out.println("PC Delivery desconectada.");
-                    } finally {
-                        // Se apagará el LED solo cuando la conexión se pierda
-                        vista.actualizarEstadoServidor(vista.lblPcDelivery, false);
-                        if (!pc3.isClosed()) {
-                            try { pc3.close(); } catch (Exception ex) {}
-                        }
-                    }
+                    }).start();
                 }
+
             } catch (Exception e) {
                 System.err.println("Error en puerto 5005: " + e.getMessage());
             }
-        }).start();   
+        }).start();
     }
-    
+   
     
 
     private static void imprimirEstadoEstructuras() { //Solo pa ver si todo nice o no está nice

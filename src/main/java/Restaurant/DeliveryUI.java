@@ -25,7 +25,7 @@ public class DeliveryUI extends JFrame {
         return 0;
     });
     
-    private final String SERVER_IP = "localhost"; // IP del Servidor (PC 2) para devolver los datos ---------------------------------------------------------
+    private final String SERVER_IP = "localhost"; // --------------------------------------------------------------------------------------------------------->IP DEL SERVER
 
     public DeliveryUI(){
         setTitle("Pantalla de Delivery");
@@ -80,6 +80,8 @@ public class DeliveryUI extends JFrame {
                 try {
                     socketAlServer = new Socket(SERVER_IP, 5005);
                     salidaServer   = new ObjectOutputStream(socketAlServer.getOutputStream());
+                    salidaServer.writeObject("DELIVERY"); // Estp es un identificador para el serverView
+                    salidaServer.flush();                 
                     System.out.println("Conexión con el servidor establecida.");
                     
                     while (corriendo && !socketAlServer.isClosed()) {// Mantener vivo el hilo mientras la conexión esté activa
@@ -101,6 +103,8 @@ public class DeliveryUI extends JFrame {
             }
         }).start();
     }
+    
+    
     
     private void iniciarServidorInterno() { //recibe los pedidos entrantes, escucha en el puerto asignado
         new Thread(() -> {

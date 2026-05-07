@@ -308,7 +308,7 @@ public class Pedido extends javax.swing.JFrame {
 
             while (corriendo) {  //este while es para que siempre que esté la ventana siga intentando conectarse
                 try {
-                    sc     = new Socket("localhost", 8080);
+                    sc     = new Socket("localhost", 8080); //--------------------------------------------------------------------------------------------------------------->IP DEL SERVER
                     salida = new ObjectOutputStream(sc.getOutputStream());
                     System.out.println("Conectado al servidor con éxito.");//hace la conección
 
