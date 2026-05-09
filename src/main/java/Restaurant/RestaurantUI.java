@@ -9,6 +9,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Queue;
 import javax.swing.*;
+import Restaurant.chat_restaurante;
 
 public class RestaurantUI extends JFrame {
 
@@ -51,10 +52,31 @@ public class RestaurantUI extends JFrame {
 
         JButton btnDespachar = new JButton("Pedido Listo");
         btnDespachar.addActionListener(e -> despacharSiguiente());
+        
+        // BOTÓN PARA ABRIR CHAT
+        JButton btnChat = new JButton("Chat");
+
+        btnChat.addActionListener(e -> {
+        chat_restaurante chat = new chat_restaurante();
+        chat.setVisible(true);
+        
+        chat.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        
+        });
 
         header.add(title, BorderLayout.WEST);
         header.add(btnDespachar, BorderLayout.EAST);
         add(header, BorderLayout.NORTH);
+        
+        // PANEL PARA LOS BOTONES
+        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        panelBotones.setBackground(new Color(45, 45, 45));
+
+        panelBotones.add(btnChat);
+        panelBotones.add(btnDespachar);
+
+        header.add(title, BorderLayout.WEST);
+        header.add(panelBotones, BorderLayout.EAST);
 
         // --- PANEL DE ÓRDENES ---
         orders = new JPanel();

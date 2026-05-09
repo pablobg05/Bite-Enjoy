@@ -7,12 +7,25 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class chat_server extends javax.swing.JFrame {
-
+    //variables pedido
     public static ServerSocket ss;
     public static Socket s;
     public static DataInputStream dis;
     public static DataOutputStream dout;
+    
+    //variables delivery
+    
+    public static ServerSocket ssDelivery;
+    public static Socket sDelivery;
+    public static DataInputStream disDelivery;
+    public static DataOutputStream doutDelivery;
 
+    //variables del restaurante 
+    
+    public static ServerSocket ssRestaurante;
+    public static Socket sRestaurante;
+    public static DataInputStream disRestaurante;
+    public static DataOutputStream doutRestaurante;
  
     public chat_server() {
         initComponents();
@@ -26,8 +39,10 @@ public class chat_server extends javax.swing.JFrame {
         });
         
         iniciarServidor();
+        iniciarServidorDelivery();
+        iniciarServidorRestaurante();
     }
-    
+    //conexión del chat de pedido
      private void iniciarServidor() {
     new Thread(() -> {
         try {
@@ -35,12 +50,12 @@ public class chat_server extends javax.swing.JFrame {
             ss.setReuseAddress(true);
             ss.bind(new java.net.InetSocketAddress(1201));
 
-            msg_area.append("\nEsperando cliente...");
+            msg_area.append("\nEsperando conexión pedido...");
 
             while (true) { 
                 s = ss.accept();
 
-                msg_area.append("\nCliente conectado");
+                msg_area.append("\nPedido conectado");
 
                 dis = new DataInputStream(s.getInputStream());
                 dout = new DataOutputStream(s.getOutputStream());
@@ -50,7 +65,7 @@ public class chat_server extends javax.swing.JFrame {
                         String msgin = "";
                         while (!msgin.equals("exit")) {
                             msgin = dis.readUTF();
-                            msg_area.append("\nCliente: " + msgin);
+                            msg_area.append("\nPedido: " + msgin);
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -63,6 +78,54 @@ public class chat_server extends javax.swing.JFrame {
         }
     }).start();
 }
+     //conexión del chat del servidor 
+         private void iniciarServidorDelivery() {
+
+        new Thread(() -> {
+
+            try {
+
+                ssDelivery = new ServerSocket();
+                ssDelivery.setReuseAddress(true);
+                ssDelivery.bind(new java.net.InetSocketAddress(3000));
+
+                msg_area.append("\nEsperando conexión de Delivery ...");
+
+                while (true) {
+
+                    sDelivery = ssDelivery.accept();
+
+                    msg_area.append("\nDelivery conectado");
+
+                    disDelivery = new DataInputStream(sDelivery.getInputStream());
+                    doutDelivery = new DataOutputStream(sDelivery.getOutputStream());
+
+                    new Thread(() -> {
+
+                        try {
+
+                            String msgin = "";
+
+                            while (!msgin.equals("exit")) {
+
+                                msgin = disDelivery.readUTF();
+
+                                msg_area.append("\nDelivery: " + msgin);
+                            }
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                    }).start();
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }).start();
+    }
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -149,31 +212,119 @@ public class chat_server extends javax.swing.JFrame {
 
     private void msg_sendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_msg_sendActionPerformed
        
-        try {
-            if (dout == null) {
-                msg_area.append("\n[ERROR] No hay cliente conectado");
-                return;
-            }
+           try {
 
-            String msg = msg_text.getText();
+        String msg = msg_text.getText();
+
+        if (msg.trim().isEmpty()) {
+            return;
+        }
+
+        boolean enviado = false;
+
+        // PEDIDO
+        if (dout != null) {
             dout.writeUTF(msg);
-            msg_area.append("\nYo: " + msg);
-            msg_text.setText("");
+            enviado = true;
+        }
+
+        // DELIVERY
+        if (doutDelivery != null) {
+            doutDelivery.writeUTF(msg);
+            enviado = true;
+        }
+
+
+        // RESTAURANTE
+        if (doutRestaurante != null) {
+            doutRestaurante.writeUTF(msg);
+            enviado = true;
+        }
+
+        if (!enviado) {
+            msg_area.append("\n[ERROR] No hay clientes conectados");
+            return;
+        }
+
+        msg_area.append("\nYo: " + msg);
+
+        msg_text.setText("");
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+        
+    }//GEN-LAST:event_msg_sendActionPerformed
+
+    private void iniciarServidorRestaurante() {
+
+    new Thread(() -> {
+
+        try {
+
+            ssRestaurante = new ServerSocket();
+            ssRestaurante.setReuseAddress(true);
+            ssRestaurante.bind(new java.net.InetSocketAddress(5000));
+
+            msg_area.append("\nEsperando Conexión de Restaurante...");
+
+            while (true) {
+
+                sRestaurante = ssRestaurante.accept();
+
+                msg_area.append("\nRestaurante conectado");
+
+                disRestaurante = new DataInputStream(sRestaurante.getInputStream());
+                doutRestaurante = new DataOutputStream(sRestaurante.getOutputStream());
+
+                new Thread(() -> {
+
+                    try {
+
+                        String msgin = "";
+
+                        while (!msgin.equals("exit")) {
+
+                            msgin = disRestaurante.readUTF();
+
+                            msg_area.append("\nRestaurante: " + msgin);
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                }).start();
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-         
-        
-    }//GEN-LAST:event_msg_sendActionPerformed
 
+    }).start();
+}
     
     public static void cerrarConexion() {
     try {
+
+        // PEDIDO
         if (dis != null) dis.close();
         if (dout != null) dout.close();
         if (s != null) s.close();
-        if (ss != null) ss.close(); // solo en server
+        if (ss != null) ss.close();
+
+        // DELIVERY
+        if (disDelivery != null) disDelivery.close();
+        if (doutDelivery != null) doutDelivery.close();
+        if (sDelivery != null) sDelivery.close();
+        if (ssDelivery != null) ssDelivery.close();
+
+        // RESTAURANTE
+        if (disRestaurante != null) disRestaurante.close();
+        if (doutRestaurante != null) doutRestaurante.close();
+        if (sRestaurante != null) sRestaurante.close();
+        if (ssRestaurante != null) ssRestaurante.close();
+
     } catch (Exception e) {
         e.printStackTrace();
     }

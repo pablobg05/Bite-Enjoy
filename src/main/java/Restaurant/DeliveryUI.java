@@ -10,6 +10,7 @@ import java.net.Socket;
 import java.util.LinkedList;
 import java.util.Queue;
 import javax.swing.*;
+import Restaurant.chat_delivery;
 
 public class DeliveryUI extends JFrame {
     
@@ -50,13 +51,36 @@ public class DeliveryUI extends JFrame {
         title.setForeground(Color.WHITE);
         title.setFont(new Font("Arial", Font.BOLD, 16));
         
-        // --- BOTÓN PARA DESPACHAR EL SIGUIENTE EN LA COLA ---
+      // --- BOTÓN PARA DESPACHAR EL SIGUIENTE EN LA COLA ---
         JButton btnDespachar = new JButton("Pedido Listo");
         btnDespachar.addActionListener(e -> despacharSiguiente());
         
         header.add(title, BorderLayout.WEST);
         header.add(btnDespachar, BorderLayout.EAST);
         add(header, BorderLayout.NORTH);
+        
+        // --- BOTÓN CHAT ---
+        JButton btnChat = new JButton("Chat");
+
+        btnChat.addActionListener(e -> {
+
+        chat_delivery chat = new chat_delivery();
+
+         chat.setVisible(true);
+
+         chat.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+        });
+        // PANEL DE BOTONES 
+        JPanel panelBotones = new JPanel();
+        panelBotones.setBackground(new Color(45, 45, 45));
+
+        panelBotones.add(btnChat);
+        panelBotones.add(btnDespachar);
+
+        // AGREGAR AL HEADER
+        header.add(title, BorderLayout.WEST);
+        header.add(panelBotones, BorderLayout.EAST);
         
         // --- PANEL DE ÓRDENES ---
         orders = new JPanel();
