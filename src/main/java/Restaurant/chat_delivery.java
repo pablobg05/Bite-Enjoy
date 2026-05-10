@@ -16,13 +16,16 @@ public class chat_delivery extends javax.swing.JFrame {
     static DataInputStream dis;
     static DataOutputStream dout;
     
+    String ipServer;
     
 
     private volatile boolean corriendo = true; //para que llame mientras esté encendido 
    
-    public chat_delivery() {
+    public chat_delivery(String ipServerRecibida) {
+        this.ipServer = ipServerRecibida;
+        
         initComponents();
-
+        
         addWindowListener(new java.awt.event.WindowAdapter() {// otra vez el listener para que detecte cuando este la interfac activa
             @Override
             public void windowClosing(java.awt.event.WindowEvent e) {
@@ -42,7 +45,7 @@ public class chat_delivery extends javax.swing.JFrame {
                 try {
                     msg_area.append("\nConectando al servidor...");
 
-                    s    = new Socket("localhost", 3000);
+                    s    = new Socket(ipServer, 3000);
                     dis  = new DataInputStream(s.getInputStream());
                     dout = new DataOutputStream(s.getOutputStream());
 
@@ -84,7 +87,7 @@ public class chat_delivery extends javax.swing.JFrame {
         msg_text = new javax.swing.JTextField();
         msg_send = new javax.swing.JButton();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setBackground(new java.awt.Color(0, 0, 102));
 
         jPanel1.setBackground(new java.awt.Color(0, 0, 0));
@@ -184,7 +187,7 @@ public class chat_delivery extends javax.swing.JFrame {
 
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new chat_delivery().setVisible(true);
+                new chat_delivery("localhost").setVisible(true);
             }
         });
         

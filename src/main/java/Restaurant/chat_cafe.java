@@ -1,6 +1,7 @@
 
-package Pedido;
+package Restaurant;
 
+import Pedido.*;
 import static Server.chat_server.dout;
 import static Server.chat_server.ss;
 import java.io.DataInputStream;
@@ -9,16 +10,22 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 
-public class chat_pedido extends javax.swing.JFrame {
+public class chat_cafe extends javax.swing.JFrame {
+    
     static Socket s;
     static DataInputStream dis;
     static DataOutputStream dout;
+    
+    String ipServer;
+    
 
     private volatile boolean corriendo = true; //para que llame mientras esté encendido 
    
-    public chat_pedido() {
+    public chat_cafe(String ipServerRecibida) {
+        this.ipServer = ipServerRecibida;
+        
         initComponents();
-
+        
         addWindowListener(new java.awt.event.WindowAdapter() {// otra vez el listener para que detecte cuando este la interfac activa
             @Override
             public void windowClosing(java.awt.event.WindowEvent e) {
@@ -38,7 +45,7 @@ public class chat_pedido extends javax.swing.JFrame {
                 try {
                     msg_area.append("\nConectando al servidor...");
 
-                    s    = new Socket("localhost", 1201);
+                    s    = new Socket(ipServer, 3000);
                     dis  = new DataInputStream(s.getInputStream());
                     dout = new DataOutputStream(s.getOutputStream());
 
@@ -83,16 +90,19 @@ public class chat_pedido extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setBackground(new java.awt.Color(0, 0, 102));
 
-        jPanel1.setBackground(new java.awt.Color(255, 204, 204));
+        jPanel1.setBackground(new java.awt.Color(153, 102, 0));
+        jPanel1.setForeground(new java.awt.Color(255, 255, 255));
 
+        jLabel1.setBackground(new java.awt.Color(153, 102, 0));
         jLabel1.setFont(new java.awt.Font("Tahoma", 1, 18)); // NOI18N
-        jLabel1.setText("Restaurante");
+        jLabel1.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel1.setText("Delivery ");
 
         msg_area.setColumns(20);
         msg_area.setRows(5);
         jScrollPane1.setViewportView(msg_area);
 
-        msg_send.setBackground(new java.awt.Color(102, 0, 0));
+        msg_send.setBackground(new java.awt.Color(0, 204, 0));
         msg_send.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
         msg_send.setForeground(new java.awt.Color(255, 255, 255));
         msg_send.setText("Enviar");
@@ -178,7 +188,7 @@ public class chat_pedido extends javax.swing.JFrame {
 
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new chat_pedido().setVisible(true);
+                new chat_cafe("localhost").setVisible(true);
             }
         });
         

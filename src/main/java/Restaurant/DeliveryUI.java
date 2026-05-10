@@ -17,6 +17,7 @@ public class DeliveryUI extends JFrame {
     private JPanel orders;
     private ObjectOutputStream salidaServer;
     private Socket socketAlServer;
+    private String ipServer;
     
     private volatile boolean corriendo = true;
     
@@ -26,12 +27,13 @@ public class DeliveryUI extends JFrame {
         return 0;
     });
     
-    private final String SERVER_IP = "localhost"; // --------------------------------------------------------------------------------------------------------->IP DEL SERVER
+//    private final String SERVER_IP = "localhost"; // --------------------------------------------------------------------------------------------------------->IP DEL SERVER
 
-    public DeliveryUI(){
+    public DeliveryUI(String ipServerRecibida){
+        this.ipServer= ipServerRecibida;
         setTitle("Pantalla de Delivery");
         setSize(700,500);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
         
         addWindowListener(new java.awt.event.WindowAdapter() { //Igual para que se detenga la conección al cerrar la ventana
@@ -64,7 +66,7 @@ public class DeliveryUI extends JFrame {
 
         btnChat.addActionListener(e -> {
 
-        chat_delivery chat = new chat_delivery();
+        chat_delivery chat = new chat_delivery(ipServer);
 
          chat.setVisible(true);
 
@@ -102,7 +104,7 @@ public class DeliveryUI extends JFrame {
 
             while (corriendo) {
                 try {
-                    socketAlServer = new Socket(SERVER_IP, 5005);
+                    socketAlServer = new Socket(ipServer, 5005);
                     salidaServer   = new ObjectOutputStream(socketAlServer.getOutputStream());
                     salidaServer.writeObject("DELIVERY"); // Estp es un identificador para el serverView
                     salidaServer.flush();                 
@@ -215,6 +217,6 @@ public class DeliveryUI extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new DeliveryUI());
+        SwingUtilities.invokeLater(() -> new DeliveryUI("localhost"));
     }
 }

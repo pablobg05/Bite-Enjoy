@@ -13,13 +13,15 @@ public class Pedido extends javax.swing.JFrame {
     private ObjectOutputStream salida;
     List <Orden> listaPedido = new ArrayList<>();
     private volatile boolean corriendo = true; // para mantener trabajando la conección con el servidor continuamente
+    String ipServer;
     
 //    public Pedido() {
 //        initComponents();
 //        conectarAlServidor();
 //        cargarComboBox();
 //    }
-    public Pedido() {
+    public Pedido(String ipServerRecibida) {
+        this.ipServer = ipServerRecibida;
         initComponents();
 
         addWindowListener(new java.awt.event.WindowAdapter() { //esta "addwindowlistener" detecta cuando el usuario cierre la ventana, ahí apaga el "corriendo" para cerrar el socket
@@ -83,7 +85,7 @@ public class Pedido extends javax.swing.JFrame {
 
         cmbTipo.setBackground(new java.awt.Color(248, 234, 234));
         cmbTipo.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
-        cmbTipo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Delivery", "Restaurante" }));
+        cmbTipo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Delivery", "Restaurante", "Cafeteria" }));
         jPanel1.add(cmbTipo, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 130, 150, 30));
 
         txtNombre.setBackground(new java.awt.Color(248, 234, 234));
@@ -308,7 +310,7 @@ public class Pedido extends javax.swing.JFrame {
 
             while (corriendo) {  //este while es para que siempre que esté la ventana siga intentando conectarse
                 try {
-                    sc     = new Socket("localhost", 8080); //--------------------------------------------------------------------------------------------------------------->IP DEL SERVER
+                    sc     = new Socket(ipServer, 8080); //--------------------------------------------------------------------------------------------------------------->IP DEL SERVER
                     salida = new ObjectOutputStream(sc.getOutputStream());
                     System.out.println("Conectado al servidor con éxito.");//hace la conección
 
@@ -374,7 +376,7 @@ public class Pedido extends javax.swing.JFrame {
 
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Pedido().setVisible(true);
+                new Pedido("localhost").setVisible(true);
             }
         });
     }

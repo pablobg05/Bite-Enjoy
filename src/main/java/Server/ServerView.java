@@ -40,10 +40,28 @@ public class ServerView extends javax.swing.JFrame {
         if (!p1.isVIP() && p2.isVIP()) return 1;
         return 0;
     });
+    
+    // Cola de Delivery con Prioridad
+    public static Queue<PedidoClass> colaCafeteria = new PriorityQueue<>((p1, p2) -> {
+        if (p1.isVIP() && !p2.isVIP()) return -1;
+        if (!p1.isVIP() && p2.isVIP()) return 1;
+        return 0;
+    });
+    
+    String ipDelivery;
+    String ipRestaurante;
+    String ipCafe;
 
-    public ServerView() {
+    public ServerView(String ipDel, String ipRes, String ipCafe) {
+        this.ipDelivery = ipDel;
+        this.ipRestaurante = ipRes;
+        this.ipCafe = ipCafe;
+        
         initComponents();
         etiquetas();
+
+        iniciarServidorPedidos(this);
+        iniciarServidorNotificaciones(this);
     }
 
 
@@ -69,15 +87,19 @@ public class ServerView extends javax.swing.JFrame {
         jPanel7 = new javax.swing.JPanel();
         PEDIDOS2 = new javax.swing.JLabel();
         lblRestaurante = new javax.swing.JLabel();
-        lblPcPedidos = new javax.swing.JLabel();
-        lblPcDelivery = new javax.swing.JLabel();
-        lblPcRestaurante = new javax.swing.JLabel();
+        jPanel9 = new javax.swing.JPanel();
+        PEDIDOS3 = new javax.swing.JLabel();
+        lblCafeteria = new javax.swing.JLabel();
         jPanel8 = new javax.swing.JPanel();
+        lblPcPedidos = new javax.swing.JLabel();
+        lblPcRestaurante = new javax.swing.JLabel();
+        lblPcDelivery = new javax.swing.JLabel();
+        lblPcCafeteria = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         jPanel1.setBackground(new java.awt.Color(204, 204, 255));
@@ -110,7 +132,7 @@ public class ServerView extends javax.swing.JFrame {
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
-                .addContainerGap(98, Short.MAX_VALUE)
+                .addContainerGap(128, Short.MAX_VALUE)
                 .addComponent(jLabel3)
                 .addGap(87, 87, 87))
             .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
@@ -124,7 +146,7 @@ public class ServerView extends javax.swing.JFrame {
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 340, Short.MAX_VALUE))
         );
 
-        jPanel1.add(jPanel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(420, 150, 440, 390));
+        jPanel1.add(jPanel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(420, 150, 470, 390));
 
         jPanel3.setBackground(new java.awt.Color(102, 102, 255));
 
@@ -200,7 +222,7 @@ public class ServerView extends javax.swing.JFrame {
                 .addComponent(PEDIDOS))
         );
 
-        jPanel1.add(jPanel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(480, 40, 90, 90));
+        jPanel1.add(jPanel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(440, 40, 90, 90));
 
         jPanel6.setBackground(new java.awt.Color(0, 0, 102));
         jPanel6.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
@@ -232,7 +254,7 @@ public class ServerView extends javax.swing.JFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jPanel1.add(jPanel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(720, 40, 90, 90));
+        jPanel1.add(jPanel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(660, 40, 90, 90));
 
         jPanel7.setBackground(new java.awt.Color(0, 0, 102));
         jPanel7.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
@@ -265,16 +287,39 @@ public class ServerView extends javax.swing.JFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jPanel1.add(jPanel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(600, 40, 90, 90));
+        jPanel1.add(jPanel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(550, 40, 90, 90));
 
-        lblPcPedidos.setIcon(new javax.swing.ImageIcon(getClass().getResource("/redCircle.png"))); // NOI18N
-        jPanel1.add(lblPcPedidos, new org.netbeans.lib.awtextra.AbsoluteConstraints(470, 30, 20, 20));
+        jPanel9.setBackground(new java.awt.Color(0, 0, 102));
+        jPanel9.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
 
-        lblPcDelivery.setIcon(new javax.swing.ImageIcon(getClass().getResource("/redCircle.png"))); // NOI18N
-        jPanel1.add(lblPcDelivery, new org.netbeans.lib.awtextra.AbsoluteConstraints(710, 30, 20, 20));
+        PEDIDOS3.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        PEDIDOS3.setForeground(new java.awt.Color(255, 255, 255));
+        PEDIDOS3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        PEDIDOS3.setText("CAFETERIA");
 
-        lblPcRestaurante.setIcon(new javax.swing.ImageIcon(getClass().getResource("/redCircle.png"))); // NOI18N
-        jPanel1.add(lblPcRestaurante, new org.netbeans.lib.awtextra.AbsoluteConstraints(590, 30, 20, 20));
+        javax.swing.GroupLayout jPanel9Layout = new javax.swing.GroupLayout(jPanel9);
+        jPanel9.setLayout(jPanel9Layout);
+        jPanel9Layout.setHorizontalGroup(
+            jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel9Layout.createSequentialGroup()
+                .addGap(12, 12, 12)
+                .addComponent(PEDIDOS3, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(12, Short.MAX_VALUE))
+            .addGroup(jPanel9Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(lblCafeteria, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        jPanel9Layout.setVerticalGroup(
+            jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel9Layout.createSequentialGroup()
+                .addComponent(lblCafeteria, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(PEDIDOS3)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jPanel1.add(jPanel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(770, 40, 90, 90));
 
         jPanel8.setBackground(new java.awt.Color(0, 0, 102));
 
@@ -291,7 +336,19 @@ public class ServerView extends javax.swing.JFrame {
 
         jPanel1.add(jPanel8, new org.netbeans.lib.awtextra.AbsoluteConstraints(410, 0, 10, 540));
 
-        getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 70, 860, 540));
+        lblPcPedidos.setIcon(new javax.swing.ImageIcon(getClass().getResource("/redCircle.png"))); // NOI18N
+        jPanel1.add(lblPcPedidos, new org.netbeans.lib.awtextra.AbsoluteConstraints(430, 30, 20, 20));
+
+        lblPcRestaurante.setIcon(new javax.swing.ImageIcon(getClass().getResource("/redCircle.png"))); // NOI18N
+        jPanel1.add(lblPcRestaurante, new org.netbeans.lib.awtextra.AbsoluteConstraints(540, 30, 20, 20));
+
+        lblPcDelivery.setIcon(new javax.swing.ImageIcon(getClass().getResource("/redCircle.png"))); // NOI18N
+        jPanel1.add(lblPcDelivery, new org.netbeans.lib.awtextra.AbsoluteConstraints(650, 30, 20, 20));
+
+        lblPcCafeteria.setIcon(new javax.swing.ImageIcon(getClass().getResource("/redCircle.png"))); // NOI18N
+        jPanel1.add(lblPcCafeteria, new org.netbeans.lib.awtextra.AbsoluteConstraints(760, 30, 20, 20));
+
+        getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 70, 890, 540));
 
         jPanel2.setBackground(new java.awt.Color(0, 0, 102));
 
@@ -316,7 +373,7 @@ public class ServerView extends javax.swing.JFrame {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addGap(310, 310, 310)
                 .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 219, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 249, Short.MAX_VALUE)
                 .addComponent(jButton1)
                 .addGap(27, 27, 27))
         );
@@ -330,7 +387,7 @@ public class ServerView extends javax.swing.JFrame {
                 .addContainerGap(17, Short.MAX_VALUE))
         );
 
-        getContentPane().add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 860, 70));
+        getContentPane().add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 890, 70));
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -429,7 +486,7 @@ public class ServerView extends javax.swing.JFrame {
 
 
     public static void main(String args[]) {
-        ServerView vista = new ServerView(); // se "Instancia" la ventana
+        ServerView vista = new ServerView("localhost", "localhost", "localhost"); // se "Instancia" la ventana
 
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
@@ -479,30 +536,42 @@ public class ServerView extends javax.swing.JFrame {
                                     try {
                                         
                                         // La IP de la PC 4 (Restaurante) y un puerto nuevo 5006
-                                        Socket socketPC4 = new Socket("localhost", 5006); // ----------------------------------------------------------------------------------------------->IP DEL RESTAURANTE
+                                        Socket socketPC4 = new Socket(vista.ipRestaurante, 5006); // <--- CORREGIDO A vista.ipRestaurante
                                         ObjectOutputStream salidaPC4 = new ObjectOutputStream(socketPC4.getOutputStream());
 
                                         salidaPC4.writeObject(p); // Le mandamos el pedido completo (tomando en cuenta lo del VIP)
                                         salidaPC4.flush();
                                         socketPC4.close(); // Cerramos después de enviar
                                     } catch (Exception e) {
-                                        System.out.println("PC 3 no está conectada o disponible");
+                                        System.out.println("PC Restaurante no está conectada o disponible");
                                     }
                                 } else if (p.getTipo().equalsIgnoreCase("Delivery")) { // Pendientes del delivery
                                     colaDelivery.add(p);
 
                                     try {
-                                        //PedidoClass pedidoADespachar = colaDelivery.peek(); //Para no mandarle al delivery según entran y tome en cuenta el VIP
-                                        
                                         // La IP de la PC 3 (Delivery) y un puerto nuevo 5004
-                                        Socket socketPC3 = new Socket("localhost", 5004); // ----------------------------------------------------------------------------------------------------->IP DELIVERY
+                                        Socket socketPC3 = new Socket(vista.ipDelivery, 5004); // <--- CORREGIDO A vista.ipDelivery
                                         ObjectOutputStream salidaPC3 = new ObjectOutputStream(socketPC3.getOutputStream());
 
                                         salidaPC3.writeObject(p); // Le mandamos el pedido completo (tomando en cuenta lo del VIP)
                                         salidaPC3.flush();
                                         socketPC3.close(); // Cerramos después de enviar
                                     } catch (Exception e) {
-                                        System.out.println("PC 3 no está conectada o disponible");
+                                        System.out.println("PC Delivery no está conectada o disponible");
+                                    }
+                                } else if (p.getTipo().equalsIgnoreCase("Cafeteria")) { // Pendientes de la cafetería
+                                    colaCafeteria.add(p);
+
+                                    try {
+                                        // La IP de la PC 4 (CAFETERIA) y un puerto nuevo 5007
+                                        Socket socketPC4 = new Socket(vista.ipCafe, 5007); // <--- USANDO vista.ipCafe Y PUERTO 5007
+                                        ObjectOutputStream salidaPC4 = new ObjectOutputStream(socketPC4.getOutputStream());
+
+                                        salidaPC4.writeObject(p); // Le mandamos el pedido completo (tomando en cuenta lo del VIP)
+                                        salidaPC4.flush();
+                                        socketPC4.close(); // Cerramos después de enviar
+                                    } catch (Exception e) {
+                                        System.out.println("PC Cafetería no está conectada o disponible");
                                     }
                                 }
                             }
@@ -557,6 +626,10 @@ public class ServerView extends javax.swing.JFrame {
                                 vista.actualizarEstadoServidor(vista.lblPcDelivery, true);
                                 System.out.println("DeliveryUI conectada.");
                             }
+                            if (tipoCliente.equals("CAFE")){ // <--- AGREGADO PARA CAFETERIA
+                                vista.actualizarEstadoServidor(vista.lblPcCafeteria, true);
+                                System.out.println("CafeUI conectada.");
+                            }
 
                             // Escuchar pedidos listos
                             while (true) {
@@ -570,6 +643,9 @@ public class ServerView extends javax.swing.JFrame {
                                 } else if (pedidoListo.getTipo().equalsIgnoreCase("Restaurante")) {//si mactchea el identificador lo borra y muestra la noti
                                     colaRestaurante.removeIf(p -> p.getId().equals(pedidoListo.getId()));
                                     vista.mostrarNotificacion("¡Pedido #" + pedidoListo.getId() + " listo en cocina!");
+                                } else if (pedidoListo.getTipo().equalsIgnoreCase("Cafe")) { // LA misma onda pero con la cafeteria jajaja
+                                    colaCafeteria.removeIf(p -> p.getId().equals(pedidoListo.getId()));
+                                    vista.mostrarNotificacion("¡Postre/Café #" + pedidoListo.getId() + " listo!");
                                 }
 
                                 for (PedidoClass p : listaPedidos) { //para marcarlo como entregado
@@ -593,6 +669,9 @@ public class ServerView extends javax.swing.JFrame {
                             if (tipoCliente.equals("DELIVERY")){
                                 vista.actualizarEstadoServidor(vista.lblPcDelivery, false);
                             }
+                            if (tipoCliente.equals("CAFE")){ // <--- 
+                                vista.actualizarEstadoServidor(vista.lblPcCafeteria, false);
+                            }
                             try { cliente.close(); } catch (Exception ex) {}
                         }
                     }).start();
@@ -612,6 +691,7 @@ public class ServerView extends javax.swing.JFrame {
         System.out.println("Cola Pendientes (Total): " + colaPedidos.size());
         System.out.println("Cola Restaurante: " + colaRestaurante.size());
         System.out.println("Cola Delivery: " + colaDelivery.size());
+        System.out.println("Cola Cafetería: " + colaCafeteria.size()); // <--- AGREGADO
         System.out.println("==========================================");
     }
 
@@ -644,7 +724,6 @@ public class ServerView extends javax.swing.JFrame {
         tblPendientes.getColumnModel().getColumn(0).setMaxWidth(80);
 
         if (colaPedidos != null && !colaPedidos.isEmpty()) {
-            // CORRECCIÓN AQUÍ: Nombre de variable sin espacios
             java.util.List<PedidoClass> listaTemporal = new java.util.ArrayList<>(colaPedidos);
 
             // Ordenamos la lista para que en la tabla aparezcan los VIP arriba
@@ -689,6 +768,7 @@ public class ServerView extends javax.swing.JFrame {
         setImagenLabel(lblPedidos, "/pedidos.png");
         setImagenLabel(lblDelivery, "/delivery.png");
         setImagenLabel(lblRestaurante, "/restaurante.png");
+        setImagenLabel(lblCafeteria, "/cafeteria.png"); 
     }
 
     public void setImagenLabel(javax.swing.JLabel etiqueta, String nombreImagen) { // para ajustar las imagenes a los lbl
@@ -732,12 +812,12 @@ public class ServerView extends javax.swing.JFrame {
 
         dialog.setVisible(true);
     }
-    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel PEDIDOS;
     private javax.swing.JLabel PEDIDOS1;
     private javax.swing.JLabel PEDIDOS2;
+    private javax.swing.JLabel PEDIDOS3;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -750,9 +830,12 @@ public class ServerView extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
+    private javax.swing.JPanel jPanel9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JLabel lblCafeteria;
     private javax.swing.JLabel lblDelivery;
+    private javax.swing.JLabel lblPcCafeteria;
     private javax.swing.JLabel lblPcDelivery;
     private javax.swing.JLabel lblPcPedidos;
     private javax.swing.JLabel lblPcRestaurante;

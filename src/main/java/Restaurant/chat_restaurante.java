@@ -15,14 +15,16 @@ public class chat_restaurante extends javax.swing.JFrame {
     static Socket s;
     static DataInputStream dis;
     static DataOutputStream dout;
+    private String ipServer;
     
     
 
     private volatile boolean corriendo = true; //para que llame mientras esté encendido 
    
-    public chat_restaurante() {
+    public chat_restaurante(String ipServerRecibida) {
         initComponents();
-
+        
+        this.ipServer = ipServerRecibida;
         addWindowListener(new java.awt.event.WindowAdapter() {// otra vez el listener para que detecte cuando este la interfac activa
             @Override
             public void windowClosing(java.awt.event.WindowEvent e) {
@@ -42,7 +44,7 @@ public class chat_restaurante extends javax.swing.JFrame {
                 try {
                     msg_area.append("\nConectando al servidor...");
 
-                    s    = new Socket("localhost", 5000);
+                    s    = new Socket(ipServer, 5000);
                     dis  = new DataInputStream(s.getInputStream());
                     dout = new DataOutputStream(s.getOutputStream());
 
@@ -84,7 +86,7 @@ public class chat_restaurante extends javax.swing.JFrame {
         msg_text = new javax.swing.JTextField();
         msg_send = new javax.swing.JButton();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setBackground(new java.awt.Color(0, 0, 102));
 
         jPanel1.setBackground(new java.awt.Color(102, 102, 102));
@@ -182,10 +184,8 @@ public class chat_restaurante extends javax.swing.JFrame {
 
     public static void main(String args[]) {
 
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new chat_restaurante().setVisible(true);
-            }
+        java.awt.EventQueue.invokeLater(() -> {
+            new chat_restaurante("localhost").setVisible(true);
         });
         
         

@@ -6,16 +6,23 @@ import java.awt.*;
 import java.awt.event.*;
 import Restaurant.DeliveryUI;
 import Restaurant.RestaurantUI;
+import Restaurant.CafeUI; // IMPORTANTE: Agregué la importación del Cafe
 import Server.ServerView;
 import Pedido.Pedido;   
 
 public class ProyectoRestaurante extends JFrame{
     
+    // Variable para guardar la IP que el usuario ingrese en el main
+    private static String ipServer = "localhost";
+    private static String ipDelivery = "localhost";
+    private static String ipRestaurante = "localhost";
+    private static String ipCafe = "localhost";
+    
     public ProyectoRestaurante(){
         //-- Titulo (lo que se mira en el borde) y tamano --
         setTitle("Bite & Enjoy");
-        setSize(700, 500);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(700, 600);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         
         //-- El layout del JFrame es usando los bordes
         setLayout(new BorderLayout());
@@ -27,7 +34,7 @@ public class ProyectoRestaurante extends JFrame{
                 BorderFactory.createEmptyBorder(12, 16, 12, 16)
         );
         
-        JLabel title = new JLabel("Bite & Enjoy");
+        JLabel title = new JLabel("Bite & Enjoy - IP: " + ipServer); // Ahora muestra la IP arriba
         title.setForeground(Color.WHITE);
         
         header.add(title, BorderLayout.WEST);
@@ -38,8 +45,16 @@ public class ProyectoRestaurante extends JFrame{
         
         //-- El layout es en grid, osea que se ponen en una tipo matriz --
         JPanel grid = new JPanel();
-        grid.setLayout(new GridLayout(2, 2, 20, 20)); // el grid es de 2 espacios para la derecha y para abajo, con 20px de espacio entre cada uno
+        grid.setLayout(new BoxLayout(grid, BoxLayout.Y_AXIS)); // apila las dos filas verticalmente
         grid.setBackground(Color.WHITE);
+
+        // -- Fila de arriba: 2 botones grandes (Pedidos y Server) --
+        JPanel filaArriba = new JPanel(new GridLayout(1, 2, 20, 0));
+        filaArriba.setBackground(Color.WHITE);
+
+        // -- Fila de abajo: 3 botones mas chicos (Restaurante, Cafeteria, Delivery) --
+        JPanel filaAbajo = new JPanel(new GridLayout(1, 3, 20, 0));
+        filaAbajo.setBackground(Color.WHITE);
         
         // ---------- Boton restaurante ----------
         JLabel res = new JLabel("Restaurante"); // Label
@@ -50,10 +65,9 @@ public class ProyectoRestaurante extends JFrame{
         topR.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
         topR.add(res, BorderLayout.CENTER); // se agrega la label al panel
         
-        // Imagen
+        // Imagen (más pequeña porque va en la fila de abajo)
         ImageIcon rawRes = new ImageIcon(getClass().getResource("/restaurante.png"));
-        
-        Image scaledRes = rawRes.getImage().getScaledInstance(64, 64,Image.SCALE_SMOOTH);
+        Image scaledRes = rawRes.getImage().getScaledInstance(48, 48, Image.SCALE_SMOOTH);
         JLabel lblIRes = new JLabel(new ImageIcon(scaledRes));
         lblIRes.setHorizontalAlignment(SwingConstants.CENTER);
         
@@ -85,9 +99,9 @@ public class ProyectoRestaurante extends JFrame{
                 }
                 @Override
                 public void mouseClicked(MouseEvent e){ // al dar click
-                    RestaurantUI res = new RestaurantUI();
+                    // Pasamos la IP al constructor para que sepa a donde conectarse
+                    RestaurantUI res = new RestaurantUI(ipServer); 
                     res.setVisible(true);
-                    setVisible(false);
                 }
         });
         
@@ -102,7 +116,8 @@ public class ProyectoRestaurante extends JFrame{
         
         ImageIcon rawDel = new ImageIcon(getClass().getResource("/delivery.png"));
         
-        Image scaledDel = rawDel.getImage().getScaledInstance(64, 64,Image.SCALE_SMOOTH);
+        // Imagen más pequeña porque va en la fila de abajo
+        Image scaledDel = rawDel.getImage().getScaledInstance(48, 48, Image.SCALE_SMOOTH);
         JLabel lblIDel = new JLabel(new ImageIcon(scaledDel));
         lblIDel.setHorizontalAlignment(SwingConstants.CENTER);
         
@@ -132,9 +147,8 @@ public class ProyectoRestaurante extends JFrame{
                 }
                 @Override
                 public void mouseClicked(MouseEvent e){
-                    DeliveryUI del = new DeliveryUI();
+                    DeliveryUI del = new DeliveryUI(ipServer);
                     del.setVisible(true);
-                    setVisible(false);
                 }
         });
         
@@ -178,15 +192,14 @@ public class ProyectoRestaurante extends JFrame{
                 }
                 @Override
                 public void mouseClicked(MouseEvent e){
-                    ServerView ser = new ServerView();
+                    ServerView ser = new ServerView(ipDelivery, ipRestaurante, ipCafe);
                     ser.setVisible(true);
-                    setVisible(false);
                 }
         });
         
         // ---------- Boton Pedidos ----------
         JLabel ped = new JLabel("Pedidos");
-        ser.setHorizontalAlignment(SwingConstants.CENTER);
+        ped.setHorizontalAlignment(SwingConstants.CENTER);
         JPanel topP = new JPanel(new BorderLayout());
         topP.setBackground(new Color(150, 150, 150));
         topP.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
@@ -196,7 +209,7 @@ public class ProyectoRestaurante extends JFrame{
         
         Image scaledPed = rawPed.getImage().getScaledInstance(64, 64,Image.SCALE_SMOOTH);
         JLabel lblIPed = new JLabel(new ImageIcon(scaledPed));
-        lblISer.setHorizontalAlignment(SwingConstants.CENTER);
+        lblIPed.setHorizontalAlignment(SwingConstants.CENTER);
         
         JPanel btnPed = new JPanel(new BorderLayout());
         btnPed.setBackground(new Color(150, 150, 150));
@@ -224,17 +237,69 @@ public class ProyectoRestaurante extends JFrame{
                 }
                 @Override
                 public void mouseClicked(MouseEvent e){
-                    Pedido ped = new Pedido();
+                    Pedido ped = new Pedido(ipServer);
                     ped.setVisible(true);
-                    setVisible(false);
                 }
         });
-        
+
+        // ---------- Boton Cafeteria ----------
+        JLabel caf = new JLabel("Cafetería");
+        caf.setHorizontalAlignment(SwingConstants.CENTER);
+        JPanel topC = new JPanel(new BorderLayout());
+        topC.setBackground(new Color(150, 150, 150));
+        topC.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
+        topC.add(caf, BorderLayout.CENTER);
+
+        // Imagen más pequeña porque va en la fila de abajo
+        ImageIcon rawCaf = new ImageIcon(getClass().getResource("/cafeteria.png")); // Cambia el recurso cuando tengas el icono de cafe
+        Image scaledCaf = rawCaf.getImage().getScaledInstance(48, 48, Image.SCALE_SMOOTH);
+        JLabel lblICaf = new JLabel(new ImageIcon(scaledCaf));
+        lblICaf.setHorizontalAlignment(SwingConstants.CENTER);
+
+        JPanel btnCaf = new JPanel(new BorderLayout());
+        btnCaf.setBackground(new Color(150, 150, 150));
+        btnCaf.add(topC, BorderLayout.NORTH);
+        btnCaf.add(lblICaf, BorderLayout.CENTER);
+        btnCaf.addMouseListener(new MouseAdapter(){
+                @Override
+                public void mouseEntered(MouseEvent e){
+                    btnCaf.setBackground(new Color(98, 98, 98));
+                    btnCaf.repaint();
+                    topC.setBackground(new Color(98, 98, 98));
+                    topC.repaint();
+                    lblICaf.setBackground(new Color(98, 98, 98));
+                    lblICaf.repaint();
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e){
+                    btnCaf.setBackground(new Color(150, 150, 150));
+                    btnCaf.repaint();
+                    topC.setBackground(new Color(150, 150, 150));
+                    topC.repaint();
+                    lblICaf.setBackground(new Color(150, 150, 150));
+                    lblICaf.repaint();
+                }
+                @Override
+                public void mouseClicked(MouseEvent e){
+                    CafeUI caf = new CafeUI(ipServer);
+                    caf.setVisible(true);
+                }
+        });
+
         // -- Se agregan todos los botones al grid
-        grid.add(btnDel);
-        grid.add(btnRes);
-        grid.add(btnSer);
-        grid.add(btnPed);
+        // Fila de arriba: Pedidos y Server
+        filaArriba.add(btnPed);
+        filaArriba.add(btnSer);
+        // Fila de abajo: Restaurante, Cafeteria y Delivery
+        filaAbajo.add(btnRes);
+        filaAbajo.add(btnCaf);
+        filaAbajo.add(btnDel);
+
+        grid.add(filaArriba);
+        grid.add(Box.createVerticalStrut(20)); // el gap de 20px entre filas
+        grid.add(filaAbajo);
+
         // -- Se agrega el grid al main layout
         main.add(grid, BorderLayout.CENTER);
         
@@ -265,8 +330,91 @@ public class ProyectoRestaurante extends JFrame{
         // Se pone visible
         setVisible(true);
     }
+
+    
+    
+    
+    
+    private static void mostrarConfiguracionRed() {
+        JDialog dialog = new JDialog((Frame)null, "Configuración de Red", true);
+        dialog.setLayout(new BorderLayout());
+        dialog.getContentPane().setBackground(new Color(240, 240, 240));
+
+        // --- Panel del Título ---
+        JPanel pnlTitulo = new JPanel();
+        pnlTitulo.setBackground(new Color(45, 45, 45));
+        JLabel lblTitulo = new JLabel("Configuración de Red");
+        lblTitulo.setForeground(Color.WHITE);
+        lblTitulo.setFont(new Font("Arial", Font.BOLD, 14));
+        pnlTitulo.add(lblTitulo);
+
+        // --- Panel de Campos (Formulario) ---
+        JPanel pnlCampos = new JPanel(new GridLayout(4, 2, 10, 10));
+        pnlCampos.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        pnlCampos.setBackground(Color.WHITE);
+
+        JTextField txtServer = new JTextField(15);
+        JTextField txtDelivery = new JTextField(15);
+        JTextField txtRest = new JTextField(15);
+        JTextField txtCafe = new JTextField(15);
+
+        pnlCampos.add(new JLabel("IP Server:")); pnlCampos.add(txtServer);
+        pnlCampos.add(new JLabel("IP Delivery:")); pnlCampos.add(txtDelivery);
+        pnlCampos.add(new JLabel("IP Restaurante:")); pnlCampos.add(txtRest);
+        pnlCampos.add(new JLabel("IP Café:")); pnlCampos.add(txtCafe);
+
+        // --- Panel de Botones ---
+        JPanel pnlBotones = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+
+        JButton btnAceptar = new JButton("ACEPTAR");
+        JButton btnLocal = new JButton("LOCALHOST");
+
+        // Estilo de botones
+        btnAceptar.setBackground(new Color(60, 179, 113)); // Verde
+        btnAceptar.setForeground(Color.WHITE);
+        btnLocal.setBackground(new Color(70, 130, 180)); // Azul
+        btnLocal.setForeground(Color.WHITE);
+
+        // Lógica ACEPTAR
+        btnAceptar.addActionListener(e -> {
+            if (txtServer.getText().isEmpty() || txtDelivery.getText().isEmpty() || 
+                txtRest.getText().isEmpty() || txtCafe.getText().isEmpty()) {
+                JOptionPane.showMessageDialog(dialog, "Debes llenar todas las IPs para continuar.", "Error", JOptionPane.ERROR_MESSAGE);
+            } else {
+                ipServer = txtServer.getText().trim();
+                ipDelivery = txtDelivery.getText().trim();
+                ipRestaurante = txtRest.getText().trim();
+                ipCafe = txtCafe.getText().trim();
+                dialog.dispose();
+            }
+        });
+
+        // Lógica LOCALHOST
+        btnLocal.addActionListener(e -> {
+            ipServer = "localhost";
+            ipDelivery = "localhost";
+            ipRestaurante = "localhost";
+            ipCafe = "localhost";
+            dialog.dispose();
+        });
+
+        pnlBotones.add(btnAceptar);
+        pnlBotones.add(btnLocal);
+
+        // Agregar todo al diálogo
+        dialog.add(pnlTitulo, BorderLayout.NORTH);
+        dialog.add(pnlCampos, BorderLayout.CENTER);
+        dialog.add(pnlBotones, BorderLayout.SOUTH);
+
+        dialog.pack();
+        dialog.setLocationRelativeTo(null); // Centrar en pantalla
+        dialog.setVisible(true);
+    }
     
     public static void main(String[] args) {
+        
+        mostrarConfiguracionRed();
+
         SwingUtilities.invokeLater(() -> {
             ProyectoRestaurante ui = new ProyectoRestaurante();
             ArbolBPlus historial = ArbolBPlus.cargar("historial.dat");
