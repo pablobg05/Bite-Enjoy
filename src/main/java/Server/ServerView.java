@@ -15,7 +15,8 @@ import javax.swing.JFrame;
 
 public class ServerView extends javax.swing.JFrame {
     // --------------------ACA DECLARO LAS ESTRUCTURAS-------------------------
-    public static List<PedidoClass> listaPedidos = new LinkedList<>(); //Para el historial
+    public static List<PedidoClass> listaPedidos = new LinkedList<>();
+    public static Clases.ArbolBPlus historial = Clases.ArbolBPlus.cargar("historial.dat"); // ← add this
 //    public static Queue<PedidoClass> colaPedidos = new LinkedList<>(); //Pendientes por hacer
 //    public static Queue<PedidoClass> colaRestaurante = new LinkedList<>(); //Pendientes del restaurante
 //    public static Queue<PedidoClass> colaDelivery = new LinkedList<>(); //Pendientes del delivery
@@ -58,6 +59,12 @@ public class ServerView extends javax.swing.JFrame {
         this.ipCafe = ipCafe;
         
         initComponents();
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent e) {
+                Clases.ArbolBPlus.guardar(historial, "historial.dat");
+            }
+        });
         etiquetas();
 
         iniciarServidorPedidos(this);
@@ -397,7 +404,8 @@ public class ServerView extends javax.swing.JFrame {
 
         if (fila != -1 && listaPedidos != null) { //verifica que si se haya seleccionado una fila y que la lista no sea nula
 
-            PedidoClass pedidoSeleccionado = listaPedidos.get(fila);//sacamos el pedido de la lista
+            java.util.List<PedidoClass> todosLosPedidos = historial.obtenerTodoElHistorial();
+            PedidoClass pedidoSeleccionado = todosLosPedidos.get(fila); //sacamos el pedido del arbol B+ usando el índice de la fila seleccionada
 
             // --- CONSTRUIR EL MENSAJE DE LA COMIDA ---
             StringBuilder detalleComida = new StringBuilder();
@@ -486,16 +494,13 @@ public class ServerView extends javax.swing.JFrame {
 
 
     public static void main(String args[]) {
-        ServerView vista = new ServerView("localhost", "localhost", "localhost"); // se "Instancia" la ventana
-
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
+                ServerView vista = new ServerView("localhost", "localhost", "localhost"); // se "Instancia" la ventana
                 vista.setVisible(true);
             }
         });
         
-        iniciarServidorPedidos(vista);
-        iniciarServidorNotificaciones(vista);
 
     }
     
@@ -525,6 +530,7 @@ public class ServerView extends javax.swing.JFrame {
 
                             // ---------------- ALMACENAR LAS VAINAS EN LAS ESTRUCTURAS ----------------
                             listaPedidos.add(p); // todo se almacena en el historial
+                            historial.insertar(p.getFecha().getTime(), p); // Insertamos en el árbol usando la fecha como clave
 
                             vista.mostrarNotificacion("¡Pedido recibido! Cliente: " + p.getCliente()); // ESTP ES LO DE LA NOTIFICACION ALEEEEEX
 
@@ -705,11 +711,9 @@ public class ServerView extends javax.swing.JFrame {
         tblHistorial.setRowHeight(30);
         tblHistorial.getColumnModel().getColumn(0).setMaxWidth(80);
 
-        if (listaPedidos != null) { // recorrer la lista el for de abajo jaja
-            for (PedidoClass p : listaPedidos) {
-                // Extraemos los datos del objeto PedidoClass para llenar las columnas e incluimos el Total calculado
-                modelo.addRow(new Object[]{p.getId(), p.getCliente(), p.getTipo(), "Q" + p.getTotalPedido()});
-            }
+        java.util.List<PedidoClass> todosLosPedidos = historial.obtenerTodoElHistorial();
+        for (PedidoClass p : todosLosPedidos) {
+            modelo.addRow(new Object[]{p.getId(), p.getCliente(), p.getTipo(), "Q" + p.getTotalPedido()});
         }
     }
 

@@ -417,7 +417,6 @@ public class ProyectoRestaurante extends JFrame{
 
         SwingUtilities.invokeLater(() -> {
             ProyectoRestaurante ui = new ProyectoRestaurante();
-            ArbolBPlus historial = ArbolBPlus.cargar("historial.dat");
         });
     }
 }
