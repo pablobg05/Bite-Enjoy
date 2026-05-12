@@ -16,7 +16,7 @@ import javax.swing.JFrame;
 public class ServerView extends javax.swing.JFrame {
     // --------------------ACA DECLARO LAS ESTRUCTURAS-------------------------
     public static List<PedidoClass> listaPedidos = new LinkedList<>();
-    public static Clases.ArbolBPlus historial = Clases.ArbolBPlus.cargar("historial.dat"); // ← add this
+    public static Clases.ArbolBPlus historial = Clases.ArbolBPlus.cargar(Clases.ArbolBPlus.RUTA); // ← add this
 //    public static Queue<PedidoClass> colaPedidos = new LinkedList<>(); //Pendientes por hacer
 //    public static Queue<PedidoClass> colaRestaurante = new LinkedList<>(); //Pendientes del restaurante
 //    public static Queue<PedidoClass> colaDelivery = new LinkedList<>(); //Pendientes del delivery
@@ -62,13 +62,16 @@ public class ServerView extends javax.swing.JFrame {
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent e) {
-                Clases.ArbolBPlus.guardar(historial, "historial.dat");
+                Clases.ArbolBPlus.guardar(historial, Clases.ArbolBPlus.RUTA); // Guardamos el historial al cerrar la ventana
+                System.exit(0); // Cerramos el programa completamente
             }
         });
         etiquetas();
 
         iniciarServidorPedidos(this);
         iniciarServidorNotificaciones(this);
+
+        actualizarTablaHistorial();
     }
 
 

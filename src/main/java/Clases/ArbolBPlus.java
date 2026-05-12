@@ -7,6 +7,7 @@ import java.io.*;
 
 public class ArbolBPlus implements Serializable{ // Serializable = para guardar el objeto sin perder los datos del arbol del historial
     private static final long serialVersionUID = 1L; // Control de version
+    public static final String RUTA = System.getProperty("user.dir") + "/historial.dat";
 
     class Nodo implements Serializable{ //El nodo con el que se va a trabajar ( así como lo que vimos del b normal muchá )
         private static final long serialVersionUID = 1L;
