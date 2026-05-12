@@ -22,6 +22,7 @@ Pedido\Pedido$6.class
 Restaurant\CafeUI$1.class
 Restaurant\RestaurantUI$1.class
 Server\chat_server$1.class
+Server\ServerView$5.class
 Pedido\chat_pedido$1.class
 Pedido\chat_pedido.class
 Pedido\RESTAURANTE.class
