@@ -552,7 +552,7 @@ public class ServerView extends javax.swing.JFrame {
                                         salidaPC4.flush();
                                         socketPC4.close(); // Cerramos después de enviar
                                     } catch (Exception e) {
-                                        System.out.println("PC Restaurante no está conectada o disponible");
+                                        System.out.println("PC Restaurante no está conectada o disponible: " + e.getMessage());
                                     }
                                 } else if (p.getTipo().equalsIgnoreCase("Delivery")) { // Pendientes del delivery
                                     colaDelivery.add(p);
@@ -566,7 +566,7 @@ public class ServerView extends javax.swing.JFrame {
                                         salidaPC3.flush();
                                         socketPC3.close(); // Cerramos después de enviar
                                     } catch (Exception e) {
-                                        System.out.println("PC Delivery no está conectada o disponible");
+                                        System.out.println("PC Delivery no está conectada o disponible: " + e.getMessage());
                                     }
                                 } else if (p.getTipo().equalsIgnoreCase("Cafeteria")) { // Pendientes de la cafetería
                                     colaCafeteria.add(p);
@@ -580,7 +580,7 @@ public class ServerView extends javax.swing.JFrame {
                                         salidaPC4.flush();
                                         socketPC4.close(); // Cerramos después de enviar
                                     } catch (Exception e) {
-                                        System.out.println("PC Cafetería no está conectada o disponible");
+                                        System.out.println("PC Cafetería no está conectada o disponible: " + e.getMessage());
                                     }
                                 }
                             }

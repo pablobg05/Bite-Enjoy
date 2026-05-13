@@ -41,6 +41,7 @@ public class DeliveryUI extends JFrame {
             public void windowClosing(java.awt.event.WindowEvent e) {
                 corriendo = false;
                 try { if (socketAlServer != null) socketAlServer.close(); } catch (Exception ex) {}
+                System.exit(0); 
             }
         });
         
