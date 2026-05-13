@@ -138,9 +138,9 @@ public class chat_server extends javax.swing.JFrame {
         msg_text = new javax.swing.JTextField();
         msg_send = new javax.swing.JButton();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jPanel1.setBackground(new java.awt.Color(0, 0, 102));
+        jPanel1.setBackground(new java.awt.Color(51, 51, 51));
 
         jLabel1.setFont(new java.awt.Font("Tahoma", 1, 18)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(255, 255, 255));
@@ -150,7 +150,8 @@ public class chat_server extends javax.swing.JFrame {
         msg_area.setRows(5);
         jScrollPane1.setViewportView(msg_area);
 
-        msg_send.setBackground(new java.awt.Color(102, 102, 255));
+        msg_send.setBackground(new java.awt.Color(0, 204, 0));
+        msg_send.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
         msg_send.setForeground(new java.awt.Color(255, 255, 255));
         msg_send.setText("Enviar");
         msg_send.addActionListener(new java.awt.event.ActionListener() {
@@ -174,7 +175,7 @@ public class chat_server extends javax.swing.JFrame {
                                 .addComponent(msg_text, javax.swing.GroupLayout.PREFERRED_SIZE, 303, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(msg_send)))
-                        .addGap(0, 6, Short.MAX_VALUE)))
+                        .addGap(0, 1, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(

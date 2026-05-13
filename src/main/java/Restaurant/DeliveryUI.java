@@ -56,6 +56,10 @@ public class DeliveryUI extends JFrame {
         
       // --- BOTÓN PARA DESPACHAR EL SIGUIENTE EN LA COLA ---
         JButton btnDespachar = new JButton("Pedido Listo");
+        btnDespachar.setBackground(new Color(0,204,0));
+        btnDespachar.setForeground(Color.white);
+        btnDespachar.setFont(new Font("SEGOE UI", Font.BOLD, 18));
+        
         btnDespachar.addActionListener(e -> despacharSiguiente());
         
         header.add(title, BorderLayout.WEST);
@@ -64,6 +68,10 @@ public class DeliveryUI extends JFrame {
         
         // --- BOTÓN CHAT ---
         JButton btnChat = new JButton("Chat");
+        
+        btnChat.setBackground(new Color(30,68,189));
+        btnChat.setForeground(Color.white);
+        btnChat.setFont(new Font("SEGOE UI", Font.BOLD, 18));
 
         btnChat.addActionListener(e -> {
 

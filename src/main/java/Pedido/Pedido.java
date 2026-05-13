@@ -61,10 +61,10 @@ public class Pedido extends javax.swing.JFrame {
         jPanel2 = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        jPanel1.setBackground(new java.awt.Color(255, 204, 204));
+        jPanel1.setBackground(new java.awt.Color(204, 204, 204));
         jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         btnAgregar.setBackground(new java.awt.Color(0, 102, 102));
@@ -78,21 +78,17 @@ public class Pedido extends javax.swing.JFrame {
         });
         jPanel1.add(btnAgregar, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 210, -1, -1));
 
-        cmbComida.setBackground(new java.awt.Color(248, 234, 234));
         cmbComida.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         cmbComida.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Hamburguesa", "Papas", "Fresas xd" }));
         jPanel1.add(cmbComida, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 170, 230, 30));
 
-        cmbTipo.setBackground(new java.awt.Color(248, 234, 234));
         cmbTipo.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         cmbTipo.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Delivery", "Restaurante", "Cafeteria" }));
         jPanel1.add(cmbTipo, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 130, 150, 30));
 
-        txtNombre.setBackground(new java.awt.Color(248, 234, 234));
         txtNombre.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         jPanel1.add(txtNombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 80, 210, 30));
 
-        txtId.setBackground(new java.awt.Color(248, 234, 234));
         txtId.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         jPanel1.add(txtId, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 30, 210, 30));
 
@@ -100,7 +96,6 @@ public class Pedido extends javax.swing.JFrame {
         jLabel2.setText("Nombre:");
         jPanel1.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 80, 90, -1));
 
-        tblPedido.setBackground(new java.awt.Color(248, 234, 234));
         tblPedido.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         tblPedido.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -164,7 +159,7 @@ public class Pedido extends javax.swing.JFrame {
         });
         jPanel1.add(btnAgregar1, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 210, -1, -1));
 
-        btnChat.setBackground(new java.awt.Color(204, 204, 0));
+        btnChat.setBackground(new java.awt.Color(102, 102, 0));
         btnChat.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         btnChat.setForeground(new java.awt.Color(255, 255, 255));
         btnChat.setText("Chat");
@@ -181,7 +176,7 @@ public class Pedido extends javax.swing.JFrame {
 
         getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 70, 680, 290));
 
-        jPanel2.setBackground(new java.awt.Color(102, 0, 0));
+        jPanel2.setBackground(new java.awt.Color(51, 51, 51));
         jPanel2.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N

@@ -55,12 +55,18 @@ public class RestaurantUI extends JFrame {
         title.setFont(new Font("Arial", Font.BOLD, 16));
 
         JButton btnDespachar = new JButton("Pedido Listo");
+        btnDespachar.setBackground(new Color(0,204,0));
+        btnDespachar.setForeground(Color.white);
+        btnDespachar.setFont(new Font("SEGOE UI", Font.BOLD, 18));
         btnDespachar.addActionListener(e -> despacharSiguiente());
         
         // BOTÓN PARA ABRIR CHAT
         JButton btnChat = new JButton("Chat");
-
+        btnChat.setBackground(new Color(30,68,189));
+        btnChat.setForeground(Color.white);
+        btnChat.setFont(new Font("SEGOE UI", Font.BOLD, 18));
         btnChat.addActionListener(e -> {
+            
         chat_restaurante chat = new chat_restaurante(ipServer);
         chat.setVisible(true);
         

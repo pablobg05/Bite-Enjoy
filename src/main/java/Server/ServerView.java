@@ -109,19 +109,19 @@ public class ServerView extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        jPanel1.setBackground(new java.awt.Color(204, 204, 255));
+        jPanel1.setBackground(new java.awt.Color(204, 204, 204));
         jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        jPanel4.setBackground(new java.awt.Color(102, 102, 255));
+        jPanel4.setBackground(new java.awt.Color(80, 80, 80));
 
         jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
         jLabel3.setForeground(new java.awt.Color(255, 255, 255));
         jLabel3.setText("PEDIDOS PENDIENTES");
 
-        tblPendientes.setBackground(new java.awt.Color(204, 204, 255));
+        tblPendientes.setBackground(new java.awt.Color(204, 204, 204));
         tblPendientes.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -158,9 +158,9 @@ public class ServerView extends javax.swing.JFrame {
 
         jPanel1.add(jPanel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(420, 150, 470, 390));
 
-        jPanel3.setBackground(new java.awt.Color(102, 102, 255));
+        jPanel3.setBackground(new java.awt.Color(80, 80, 80));
 
-        tblHistorial.setBackground(new java.awt.Color(204, 204, 255));
+        tblHistorial.setBackground(new java.awt.Color(204, 204, 204));
         tblHistorial.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -203,7 +203,7 @@ public class ServerView extends javax.swing.JFrame {
 
         jPanel1.add(jPanel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, -1, -1));
 
-        jPanel5.setBackground(new java.awt.Color(0, 0, 102));
+        jPanel5.setBackground(new java.awt.Color(30, 30, 30));
         jPanel5.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
 
         PEDIDOS.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
@@ -234,7 +234,7 @@ public class ServerView extends javax.swing.JFrame {
 
         jPanel1.add(jPanel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(440, 40, 90, 90));
 
-        jPanel6.setBackground(new java.awt.Color(0, 0, 102));
+        jPanel6.setBackground(new java.awt.Color(30, 30, 30));
         jPanel6.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
 
         PEDIDOS1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
@@ -266,7 +266,7 @@ public class ServerView extends javax.swing.JFrame {
 
         jPanel1.add(jPanel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(660, 40, 90, 90));
 
-        jPanel7.setBackground(new java.awt.Color(0, 0, 102));
+        jPanel7.setBackground(new java.awt.Color(30, 30, 30));
         jPanel7.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
 
         PEDIDOS2.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
@@ -299,7 +299,7 @@ public class ServerView extends javax.swing.JFrame {
 
         jPanel1.add(jPanel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(550, 40, 90, 90));
 
-        jPanel9.setBackground(new java.awt.Color(0, 0, 102));
+        jPanel9.setBackground(new java.awt.Color(30, 30, 30));
         jPanel9.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
 
         PEDIDOS3.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
@@ -331,7 +331,7 @@ public class ServerView extends javax.swing.JFrame {
 
         jPanel1.add(jPanel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(770, 40, 90, 90));
 
-        jPanel8.setBackground(new java.awt.Color(0, 0, 102));
+        jPanel8.setBackground(new java.awt.Color(51, 51, 51));
 
         javax.swing.GroupLayout jPanel8Layout = new javax.swing.GroupLayout(jPanel8);
         jPanel8.setLayout(jPanel8Layout);
@@ -360,13 +360,13 @@ public class ServerView extends javax.swing.JFrame {
 
         getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 70, 890, 540));
 
-        jPanel2.setBackground(new java.awt.Color(0, 0, 102));
+        jPanel2.setBackground(new java.awt.Color(51, 51, 51));
 
         jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(255, 255, 255));
         jLabel1.setText("SERVIDOR GENERAL");
 
-        jButton1.setBackground(new java.awt.Color(102, 102, 255));
+        jButton1.setBackground(new java.awt.Color(0, 153, 51));
         jButton1.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         jButton1.setForeground(new java.awt.Color(255, 255, 255));
         jButton1.setText("Chat");

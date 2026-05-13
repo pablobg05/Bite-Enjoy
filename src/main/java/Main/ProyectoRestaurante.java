@@ -335,7 +335,7 @@ public class ProyectoRestaurante extends JFrame{
     
     
     
-    private static void mostrarConfiguracionRed() {
+private static void mostrarConfiguracionRed() {
         JDialog dialog = new JDialog((Frame)null, "Configuración de Red", true);
         dialog.setLayout(new BorderLayout());
         dialog.getContentPane().setBackground(new Color(240, 240, 240));
@@ -368,12 +368,15 @@ public class ProyectoRestaurante extends JFrame{
 
         JButton btnAceptar = new JButton("ACEPTAR");
         JButton btnLocal = new JButton("LOCALHOST");
+        JButton btnDefault = new JButton("DEFAULT");
 
         // Estilo de botones
         btnAceptar.setBackground(new Color(60, 179, 113)); // Verde
         btnAceptar.setForeground(Color.WHITE);
         btnLocal.setBackground(new Color(70, 130, 180)); // Azul
         btnLocal.setForeground(Color.WHITE);
+        btnDefault.setBackground(new Color(105, 105, 105)); // Gris oscuro
+        btnDefault.setForeground(Color.WHITE);
 
         // Lógica ACEPTAR
         btnAceptar.addActionListener(e -> {
@@ -398,8 +401,18 @@ public class ProyectoRestaurante extends JFrame{
             dialog.dispose();
         });
 
+        // Lógica DEFAULT
+        btnDefault.addActionListener(e -> {
+            ipServer = "10.124.206.145";
+            ipRestaurante = "10.124.206.133";
+            ipCafe = "10.124.206.157";
+            ipDelivery = "10.124.206.164";
+            dialog.dispose();
+        });
+
         pnlBotones.add(btnAceptar);
         pnlBotones.add(btnLocal);
+        pnlBotones.add(btnDefault);
 
         // Agregar todo al diálogo
         dialog.add(pnlTitulo, BorderLayout.NORTH);
