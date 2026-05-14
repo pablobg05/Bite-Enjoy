@@ -35,6 +35,7 @@ Restaurant\chat_restaurante$1.class
 Restaurant\RestaurantUI.class
 Restaurant\chat_cafe$3.class
 Main\ProyectoRestaurante.class
+Pedido\Pedido$8.class
 Server\ServerView$4.class
 Restaurant\DeliveryUI$1.class
 Server\ServerView.class

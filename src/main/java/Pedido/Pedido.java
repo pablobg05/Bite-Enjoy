@@ -47,7 +47,7 @@ public class Pedido extends javax.swing.JFrame {
         cmbTipo = new javax.swing.JComboBox<>();
         txtNombre = new javax.swing.JTextField();
         txtId = new javax.swing.JTextField();
-        jLabel2 = new javax.swing.JLabel();
+        lblTotal = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tblPedido = new javax.swing.JTable();
         jLabel4 = new javax.swing.JLabel();
@@ -58,10 +58,12 @@ public class Pedido extends javax.swing.JFrame {
         btnAgregar1 = new javax.swing.JButton();
         btnChat = new javax.swing.JButton();
         BtnVip = new javax.swing.JToggleButton();
+        jLabel7 = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         jPanel1.setBackground(new java.awt.Color(204, 204, 204));
@@ -92,9 +94,9 @@ public class Pedido extends javax.swing.JFrame {
         txtId.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         jPanel1.add(txtId, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 30, 210, 30));
 
-        jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel2.setText("Nombre:");
-        jPanel1.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 80, 90, -1));
+        lblTotal.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        lblTotal.setText("...");
+        jPanel1.add(lblTotal, new org.netbeans.lib.awtextra.AbsoluteConstraints(460, 250, 180, -1));
 
         tblPedido.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
         tblPedido.setModel(new javax.swing.table.DefaultTableModel(
@@ -112,7 +114,7 @@ public class Pedido extends javax.swing.JFrame {
             tblPedido.getColumnModel().getColumn(0).setMaxWidth(70);
         }
 
-        jPanel1.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(370, 30, 300, 210));
+        jPanel1.add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(370, 30, 300, 200));
 
         jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         jLabel4.setText("DPI:");
@@ -172,7 +174,20 @@ public class Pedido extends javax.swing.JFrame {
 
         BtnVip.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         BtnVip.setText("VIP");
+        BtnVip.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtnVipActionPerformed(evt);
+            }
+        });
         jPanel1.add(BtnVip, new org.netbeans.lib.awtextra.AbsoluteConstraints(260, 250, 90, 30));
+
+        jLabel7.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        jLabel7.setText("Nombre:");
+        jPanel1.add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 80, 90, -1));
+
+        jLabel8.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        jLabel8.setText("Total: Q");
+        jPanel1.add(jLabel8, new org.netbeans.lib.awtextra.AbsoluteConstraints(380, 250, 70, -1));
 
         getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 70, 680, 290));
 
@@ -227,6 +242,9 @@ public class Pedido extends javax.swing.JFrame {
                 
                 if(BtnVip.isSelected()){ //para "marcarlo" para la cola prioritaria
                     p.setVIP(true);
+                    for(Orden o : listaPedido){
+                        o.setPrecio(o.getPrecio() * 0.95); 
+                    }
                 } 
 
                 p.setOrigen("PCPEDIDOS");
@@ -272,9 +290,14 @@ public class Pedido extends javax.swing.JFrame {
     chat.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     }//GEN-LAST:event_btnChatActionPerformed
 
+    private void BtnVipActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnVipActionPerformed
+        calcularTotal();
+    }//GEN-LAST:event_BtnVipActionPerformed
+
     public void actualizarTablaPedido() {
             javax.swing.table.DefaultTableModel modelo = (javax.swing.table.DefaultTableModel) tblPedido.getModel(); //reinicia la tabla y saca modelo
             modelo.setRowCount(0); 
+
 
             modelo.setColumnIdentifiers(new Object[]{"No.", "Pedido", "Precio"});//columnas
 
@@ -286,17 +309,17 @@ public class Pedido extends javax.swing.JFrame {
 
             int contador = 1;
             if (listaPedido != null) { 
-                // CAMBIO CLAVE: Usamos 'Orden' en lugar de 'Object' para acceder a sus métodos
                 for (Orden orden : listaPedido) { 
-                    // Agregamos los datos: el contador, el nombre de la comida y el precio con formato
                     modelo.addRow(new Object[]{
                         contador, 
-                        orden.getNombreComida(), 
+                        orden.getNombreComida(),
+
                         "Q" + orden.getPrecio()
                     });
                     contador++;
                 }
             }
+            calcularTotal();
         }
     
     private void conectarAlServidor() {
@@ -332,13 +355,22 @@ public class Pedido extends javax.swing.JFrame {
     public List<Orden> obtenerMenuDefault() {
         List<Orden> menu = new ArrayList<>();
 
-        // Agregamos los platos con sus precios reales
-        menu.add(new Orden("Pizza Familiar", 75.00));
-        menu.add(new Orden("Hamburguesa Doble", 45.00));
-        menu.add(new Orden("Tacos (Orden de 3)", 30.00));
-        menu.add(new Orden("Lasaña de Carne", 55.00));
+        menu.add(new Orden("Pizza Margherita", 60.00));
+        menu.add(new Orden("Pizza Pepperoni", 70.00));
+        menu.add(new Orden("Pizza Hawaiana", 75.00));
+        menu.add(new Orden("Pizza Vegetariana", 65.00));
+        menu.add(new Orden("Pizza Suprema", 85.00));
+
+        menu.add(new Orden("Papas Fritas con Queso", 25.00));
+        menu.add(new Orden("Palitroques de Ajo", 30.00));
+        menu.add(new Orden("Alitas BBQ", 45.00));
+
         menu.add(new Orden("Gaseosa 1.5L", 15.00));
-        menu.add(new Orden("Papas Fritas", 20.00));
+        menu.add(new Orden("Té Frío Natural", 12.00));
+        menu.add(new Orden("Limonada", 18.00));
+
+        menu.add(new Orden("Brownie con Helado", 25.00));
+        menu.add(new Orden("Cheesecake", 30.00));
 
         return menu;
     }
@@ -355,6 +387,23 @@ public class Pedido extends javax.swing.JFrame {
             ((javax.swing.DefaultComboBoxModel)cmbComida.getModel()).addElement(item);
         }
     }
+    
+    public void calcularTotal() {
+    double total = 0;
+    
+    for (Orden orden : listaPedido) {
+        total += orden.getPrecio();
+    }
+
+    if (BtnVip.isSelected()) {
+        total = total * 0.95; 
+        lblTotal.setForeground(java.awt.Color.RED); 
+    } else {
+        lblTotal.setForeground(java.awt.Color.BLACK);
+    }
+
+    lblTotal.setText(String.format("%.2f", total));
+}
     
     public void limpiar(){
         txtNombre.setText("");
@@ -385,14 +434,16 @@ public class Pedido extends javax.swing.JFrame {
     private javax.swing.JButton btnEnviar;
     private javax.swing.JComboBox<String> cmbComida;
     private javax.swing.JComboBox<String> cmbTipo;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel lblTotal;
     private javax.swing.JTable tblPedido;
     private javax.swing.JTextField txtId;
     private javax.swing.JTextField txtNombre;

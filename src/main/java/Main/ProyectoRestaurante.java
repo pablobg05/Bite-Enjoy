@@ -330,6 +330,23 @@ public class ProyectoRestaurante extends JFrame{
         // Se pone visible
         setVisible(true);
     }
+    
+    
+    
+private static java.util.Properties cargarConfig() { // oara cargar el config que esta en resources xd
+    java.util.Properties props = new java.util.Properties();
+    try (java.io.InputStream in = ProyectoRestaurante.class
+            .getResourceAsStream("/config.properties")) {
+        if (in != null) {
+            props.load(in);
+        } else {
+            System.out.println("config.properties no encontrado, usando defaults.");
+        }
+    } catch (java.io.IOException e) {
+        e.printStackTrace();
+    }
+    return props;
+}
 
     
     
@@ -403,13 +420,13 @@ private static void mostrarConfiguracionRed() {
 
         // Lógica DEFAULT
         btnDefault.addActionListener(e -> {
-            ipServer = "10.124.206.145";
-            ipRestaurante = "10.124.206.133";
-            ipCafe = "10.124.206.157";
-            ipDelivery = "10.124.206.164";
+            java.util.Properties cfg = cargarConfig();
+            ipServer      = cfg.getProperty("ip.server",      "localhost");
+            ipRestaurante = cfg.getProperty("ip.restaurante",  "localhost");
+            ipCafe        = cfg.getProperty("ip.cafe",         "localhost");
+            ipDelivery    = cfg.getProperty("ip.delivery",     "localhost");
             dialog.dispose();
         });
-
         pnlBotones.add(btnAceptar);
         pnlBotones.add(btnLocal);
         pnlBotones.add(btnDefault);
