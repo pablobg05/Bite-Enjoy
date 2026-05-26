@@ -113,6 +113,7 @@ public class ServerView extends javax.swing.JFrame {
         jPanel2 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
+        lblZentory = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -435,7 +436,8 @@ public class ServerView extends javax.swing.JFrame {
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(310, 310, 310)
+                .addComponent(lblZentory, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(192, 192, 192)
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 249, Short.MAX_VALUE)
                 .addComponent(jButton1)
@@ -449,6 +451,7 @@ public class ServerView extends javax.swing.JFrame {
                     .addComponent(jLabel1)
                     .addComponent(jButton1))
                 .addContainerGap(17, Short.MAX_VALUE))
+            .addComponent(lblZentory, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         getContentPane().add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 890, 70));
@@ -858,6 +861,7 @@ public class ServerView extends javax.swing.JFrame {
         setImagenLabel(lblDelivery, "/delivery.png");
         setImagenLabel(lblRestaurante, "/restaurante.png");
         setImagenLabel(lblCafeteria, "/cafeteria.png"); 
+        setImagenLabel(lblZentory, "/logoZentory.png");
     }
 
     public void setImagenLabel(javax.swing.JLabel etiqueta, String nombreImagen) { // para ajustar las imagenes a los lbl
@@ -933,6 +937,7 @@ public class ServerView extends javax.swing.JFrame {
     private javax.swing.JLabel lblPcRestaurante;
     private javax.swing.JLabel lblPedidos;
     private javax.swing.JLabel lblRestaurante;
+    private javax.swing.JLabel lblZentory;
     private javax.swing.JTable tblHistorial;
     private javax.swing.JTable tblPendientes;
     private javax.swing.JTextField txtDPI;

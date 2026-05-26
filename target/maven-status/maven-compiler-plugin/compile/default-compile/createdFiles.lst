@@ -31,6 +31,7 @@ Pedido\Pedido$7.class
 Pedido\chat_pedido$3.class
 Main\ProyectoRestaurante$3.class
 Restaurant\CafeUI.class
+Server\ServerView$6.class
 Restaurant\chat_restaurante$1.class
 Restaurant\RestaurantUI.class
 Restaurant\chat_cafe$3.class
@@ -38,6 +39,7 @@ Main\ProyectoRestaurante.class
 Pedido\Pedido$8.class
 Server\ServerView$4.class
 Restaurant\DeliveryUI$1.class
+Server\ServerView$7.class
 Server\ServerView.class
 Main\ProyectoRestaurante$2.class
 Pedido\Pedido$4.class
